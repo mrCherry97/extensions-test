@@ -1,0 +1,4433 @@
+dataSources:
+  podSelector:
+    resource:
+      kind: Pod
+      version: v1
+    filter: $matchByLabelSelector($item, $root.spec.selector.matchLabels)
+details:
+  header:
+    - source: spec.action
+      name: spec.action
+    - source: spec.provider
+      widget: Labels
+      name: spec.provider
+  resourceGraph:
+    colorVariant: 3
+    dataSources:
+      - source: podSelector
+  body:
+    - widget: Table
+      name: spec.rules
+      source: spec.rules
+      disablePadding: true
+      showHeader: false
+      visibility: $exists($value)
+      collapsibleTitle: '"Rule #" & $string($index + 1) & (" " & $join($keys($item), " "))'
+      collapsible:
+        - source: $item.from
+          widget: Table
+          name: spec.rules.from
+          disablePadding: true
+          showHeader: false
+          visibility: $exists($value)
+          collapsibleTitle: >-
+            "From #" & $string($index + 1) & (" " & $join($keys($item.source), "
+            "))
+          collapsible:
+            - source: $item.source
+              widget: Panel
+              name: spec.rules.from.source
+              children:
+                - source: $item.principals
+                  name: spec.rules.from.source.principals
+                  widget: JoinedArray
+                  visibility: $exists($value)
+                - source: $item.notPrincipals
+                  name: spec.rules.from.source.notPrincipals
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.requestPrincipals
+                  name: spec.rules.from.source.requestPrincipals
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notRequestPrincipals
+                  name: spec.rules.from.source.notRequestPrincipals
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.namespaces
+                  name: spec.rules.from.source.namespaces
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notNamespaces
+                  name: spec.rules.from.source.notNamespaces
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.ipBlocks
+                  name: spec.rules.from.source.ipBlocks
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notIpBlocks
+                  name: spec.rules.from.source.notIpBlocks
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.remoteIpBlocks
+                  name: spec.rules.from.source.remoteIpBlocks
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notRemoteIpBlocks
+                  name: spec.rules.from.source.notRemoteIpBlocks
+                  widget: Labels
+                  visibility: $exists($value)
+        - source: $item.to
+          widget: Table
+          name: spec.rules.to
+          disablePadding: true
+          showHeader: false
+          visibility: $exists($value)
+          collapsibleTitle: >-
+            "To #" & $string($index + 1) & (" " & $join($keys($item.operation),
+            " "))
+          collapsible:
+            - source: $item.operation
+              widget: Panel
+              name: spec.rules.to.operation
+              children:
+                - source: $item.Hosts
+                  name: spec.rules.to.operation.hosts
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notHosts
+                  name: spec.rules.to.operation.notHosts
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.ports
+                  name: spec.rules.to.operation.ports
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notPorts
+                  name: spec.rules.to.operation.notPorts
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.methods
+                  name: spec.rules.to.operation.methods
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notMethods
+                  name: spec.rules.to.operation.notMethods
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.paths
+                  name: spec.rules.to.operation.paths
+                  widget: Labels
+                  visibility: $exists($value)
+                - source: $item.notPaths
+                  name: spec.rules.to.operation.notPaths
+                  widget: Labels
+                  visibility: $exists($value)
+        - source: $item.when
+          widget: Table
+          name: spec.rules.when
+          visibility: $exists($value)
+          children:
+            - source: $item.key
+              name: spec.rules.when.key
+              visibility: $exists($value)
+            - source: $item.values
+              name: spec.rules.when.values
+              widget: JoinedArray
+              separator: break
+              visibility: $exists($value)
+            - source: $item.notValues
+              name: spec.rules.when.notValues
+              widget: JoinedArray
+              separator: break
+              visibility: $exists($value)
+    - widget: Panel
+      name: spec.selector.matchLabels
+      disablePadding: true
+      children:
+        - source: $podSelector()
+          widget: ResourceList
+          disableCreate: true
+          visibility: $boolean($root.spec.selector.matchLabels)
+        - source: spec.selector
+          widget: Panel
+          name: selector.matchesAllPods
+          visibility: $not($exists($value)) or $not($boolean($value))
+      header:
+        - source: spec.selector.matchLabels
+          widget: Labels
+          name: spec.selector.matchLabels
+          visibility: $boolean($value)
+form:
+  - path: spec.selector.matchLabels
+    widget: KeyValuePair
+  - path: spec.action
+    placeholder: placeholders.dropdown
+    simple: true
+    description: description.action
+  - path: spec.provider
+    widget: FormGroup
+    children:
+      - path: name
+  - path: spec.rules
+    widget: GenericList
+    simple: true
+    children:
+      - path: "[].from"
+        widget: GenericList
+        children:
+          - path: "[].source"
+            widget: FormGroup
+            children:
+              - path: principals
+                widget: SimpleList
+                description: description.rules.from.principals
+                children:
+                  - path: "[]"
+              - path: notPrincipals
+                widget: SimpleList
+                description: description.rules.from.notPrincipals
+                children:
+                  - path: "[]"
+              - path: requestPrincipals
+                widget: SimpleList
+                description: description.rules.from.requestPrincipals
+                children:
+                  - path: "[]"
+              - path: notRequestPrincipals
+                widget: SimpleList
+                description: description.rules.from.notRequestPrincipals
+                children:
+                  - path: "[]"
+              - path: namespaces
+                widget: SimpleList
+                description: description.rules.from.namespaces
+                children:
+                  - path: "[]"
+              - path: notNamespaces
+                widget: SimpleList
+                description: description.rules.from.notNamespaces
+                children:
+                  - path: "[]"
+              - path: ipBlocks
+                widget: SimpleList
+                description: description.rules.from.ipBlocks
+                children:
+                  - path: "[]"
+              - path: notIpBlocks
+                widget: SimpleList
+                description: description.rules.from.notIpBlocks
+                children:
+                  - path: "[]"
+              - path: remoteIpBlocks
+                widget: SimpleList
+                description: description.rules.from.remoteIpBlocks
+                children:
+                  - path: "[]"
+              - path: notRemoteIpBlocks
+                widget: SimpleList
+                description: description.rules.from.notRemoteIpBlocks
+                children:
+                  - path: "[]"
+      - path: "[].to"
+        widget: GenericList
+        children:
+          - path: "[].operation"
+            widget: FormGroup
+            children:
+              - path: hosts
+                widget: SimpleList
+                description: description.rules.to.hosts
+                children:
+                  - path: "[]"
+              - path: notHosts
+                widget: SimpleList
+                description: description.rules.to.notHosts
+                children:
+                  - path: "[]"
+              - path: ports
+                widget: SimpleList
+                description: description.rules.to.ports
+                children:
+                  - path: "[]"
+              - path: notPorts
+                widget: SimpleList
+                description: description.rules.to.notPorts
+                children:
+                  - path: "[]"
+              - path: methods
+                widget: SimpleList
+                description: description.rules.to.methods
+                children:
+                  - path: "[]"
+              - path: notMethods
+                widget: SimpleList
+                description: description.rules.to.notMethods
+                children:
+                  - path: "[]"
+              - path: paths
+                widget: SimpleList
+                description: description.rules.to.paths
+                children:
+                  - path: "[]"
+              - path: notPaths
+                widget: SimpleList
+                description: description.rules.to.notPaths
+                children:
+                  - path: "[]"
+      - path: "[].when"
+        widget: GenericList
+        children:
+          - path: "[].key"
+            widget: Text
+            description: description.rules.when.key
+          - path: "[].values"
+            widget: SimpleList
+            description: description.rules.when.values
+            children:
+              - path: "[]"
+          - path: "[].notValues"
+            widget: SimpleList
+            description: description.rules.when.notValues
+            children:
+              - path: "[]"
+general:
+  resource:
+    kind: AuthorizationPolicy
+    group: security.istio.io
+    version: v1beta1
+  name: Authorization Policies
+  category: Istio
+  urlPath: authorizationpolicies
+  scope: namespace
+  description: >-
+    {{[Istio Authorization
+    Policy](https://istio.io/latest/docs/reference/config/security/authorization-policy/)}}
+    allows for workload access management in the mesh.
+list:
+  - name: action
+    source: spec.action
+translations:
+  en:
+    description.action: >-
+      Optional. The action to take if the request is matched with the rules.
+      Default is ALLOW if not specified.
+    description.rules.from.principals: >-
+      Optional. A list of peer identities derived from the peer certificate. The
+      peer identity is in the format of '<TRUSTDOMAIN> /ns/ <NAMESPACE> /sa/
+      <SERVICEACCOUNT>', for example, 'cluster.local/ns/default/sa/productpage'.
+      If not set, any principal is allowed.
+    description.rules.from.notPrincipals: Optional. A list of negative match of peer identities.
+    description.rules.from.requestPrincipals: >-
+      Optional. A list of request identities derived from the JWT. The request
+      identity is in the format of '<ISS>/<SUB>', for example,
+      'example.com/sub-1'. If not set, any request principal is allowed.
+    description.rules.from.notRequestPrincipals: Optional. A list of negative match of request identities.
+    description.rules.from.namespaces: >-
+      Optional. A list of namespaces derived from the peer certificate. If not
+      set, any namespace is allowed.
+    description.rules.from.notNamespaces: Optional. A list of negative match of namespaces.
+    description.rules.from.ipBlocks: >-
+      Optional. A list of IP blocks, populated from the source address of the IP
+      packet. Single IP (e.g. '1.2.3.4') and CIDR (e.g. '1.2.3.0/24') are
+      supported. If not set, any IP is allowed.
+    description.rules.from.notIpBlocks: Optional. A list of negative match of IP blocks.
+    description.rules.from.remoteIpBlocks: >-
+      Optional. A list of IP blocks, populated from X-Forwarded-For header or
+      proxy protocol. To make use of this field, you must configure the
+      numTrustedProxies field of the gatewayTopology under the meshConfig when
+      you install Istio or using an annotation on the ingress gateway. If not
+      set, any IP is allowed.
+    description.rules.from.notRemoteIpBlocks: Optional. A list of negative match of remote IP blocks.
+    description.rules.to.hosts: >-
+      Optional. A list of hosts as specified in the HTTP request. The match is
+      case-insensitive. If not set, any host is allowed. Must be used only with
+      HTTP.
+    description.rules.to.notHosts: >-
+      Optional. A list of negative match of hosts as specified in the HTTP
+      request. The match is case-insensitive.
+    description.rules.to.ports: >-
+      Optional. A list of ports as specified in the connection. If not set, any
+      port is allowed.
+    description.rules.to.notPorts: >-
+      Optional. A list of negative match of ports as specified in the
+      connection.
+    description.rules.to.methods: >-
+      Optional. A list of methods as specified in the HTTP request. If not set,
+      any method is allowed. Must be used only with HTTP.
+    description.rules.to.notMethods: >-
+      Optional. A list of negative match of methods as specified in the HTTP
+      request.
+    description.rules.to.paths: >-
+      Optional. A list of paths as specified in the HTTP request. If not set,
+      any path is allowed. Must be used only with HTTP.
+    description.rules.to.notPaths: Optional. A list of negative match of paths.
+    description.rules.when.key: The name of an Istio attribute.
+    description.rules.when.values: >-
+      Optional. A list of allowed values for the attribute. At least one of
+      values or notValues must be set.
+    description.rules.when.notValues: >-
+      Optional. A list of negative match of values for the attribute. At least
+      one of values or notValues must be set.
+    placeholders.dropdown: Type or choose an option.
+    spec.action: Action
+    spec.provider: Provider
+    spec.rules: Rules
+    spec.rules.from: From
+    spec.rules.from.source: Source
+    spec.rules.from.source.principals: Principals
+    spec.rules.from.source.notPrincipals: NotPrincipals
+    spec.rules.from.source.requestPrincipals: RequestPrincipals
+    spec.rules.from.source.notRequestPrincipals: NotRequestPrincipals
+    spec.rules.from.source.namespaces: Namespaces
+    spec.rules.from.source.notNamespaces: NotNamespaces
+    spec.rules.from.source.ipBlocks: IpBlocks
+    spec.rules.from.source.notIpBlocks: NotIpBlocks
+    spec.rules.from.source.remoteIpBlocks: RemoteIpBlocks
+    spec.rules.from.source.notRemoteIpBlocks: NotRemoteIpBlocks
+    spec.rules.to: To
+    spec.rules.to.operation: Operation
+    spec.rules.to.operation.hosts: Hosts
+    spec.rules.to.operation.notHosts: NotHosts
+    spec.rules.to.operation.ports: Ports
+    spec.rules.to.operation.notPorts: NotPorts
+    spec.rules.to.operation.methods: Methods
+    spec.rules.to.operation.notMethods: NotMethods
+    spec.rules.to.operation.paths: Paths
+    spec.rules.to.operation.notPaths: NotPaths
+    spec.rules.when: When
+    spec.rules.when.key: Key
+    spec.rules.when.values: Values
+    spec.rules.when.notValues: NotValues
+    spec.selector.matchLabels: Selector
+    selector.matchesAllPods: Matches all Pods in the Namespace
+---
+general:
+  resource:
+    kind: DestinationRule
+    group: networking.istio.io
+    version: v1beta1
+  name: Destination Rules
+  category: Istio
+  urlPath: destinationrules
+  scope: namespace
+  description: resource.description
+details:
+  header: []
+  body:
+    - name: References
+      widget: Panel
+      children:
+        - source: spec.host
+          name: Host
+        - source: spec.exportTo
+          widget: Labels
+          name: Export To
+          visibility: $count(data)
+        - source: spec.workloadSelector.matchLabels
+          widget: Labels
+          name: Workload Selector Match Labels
+          visibility: $count(data)
+    - source: spec.trafficPolicy
+      name: Traffic Policy
+      visibility: $exists($.data)
+      widget: Panel
+      children:
+        - source: $parent.loadBalancer
+          name: Load Balancer
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.simple
+              name: Simple
+              visibility: $exists($.data)
+              widget: Badge
+            - source: $parent.warmupDurationSecs
+              name: Warmup Duration Secs
+              visibility: $exists($.data)
+            - source: $parent.consistentHash
+              name: Consistent Hash
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.httpHeaderName
+                  name: HTTP Header Name
+                  visibility: $exists($.data)
+                - source: $parent.useSourceIp
+                  name: Use Source IP
+                  visibility: $exists($.data)
+                  widget: Badge
+                  highlights:
+                    positive:
+                      - "true"
+                    negative:
+                      - "false"
+                - source: $parent.httpQueryParameterName
+                  name: HTTP Query Parameter Name
+                  visibility: $exists($.data)
+                - source: $parent.minimumRingSize
+                  name: Minimum Ring Size
+                  visibility: $exists($.data)
+                - source: $parent.httpCookie
+                  name: HTTP Cookie
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.name
+                      name: Name
+                    - source: $parent.path
+                      name: Path
+                    - source: $parent.ttl
+                      name: TTL
+            - source: $parent.localityLbSetting
+              name: Locality LB Settings
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - name: Enabled
+                  source: $parent.enabled
+                  widget: Badge
+                  highlights:
+                    positive:
+                      - "true"
+                    negative:
+                      - "false"
+                - widget: Table
+                  name: Distribute
+                  visibility: $count(data)
+                  source: $parent.distribute
+                  children:
+                    - source: $item.from
+                      name: From
+                    - source: $item.to
+                      name: To
+                      widget: Labels
+                - widget: Table
+                  name: Failover
+                  visibility: $count(data)
+                  source: $parent.failover
+                  children:
+                    - source: $item.from
+                      name: From
+                    - source: $item.to
+                      name: To
+                - name: Failover Priority
+                  source: $parent.failoverPriority
+                  widget: JoinedArray
+                  visibility: $count(data)
+        - source: $parent.connectionPool
+          name: Connection Pool
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.tcp
+              name: TCP
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.maxConnections
+                  name: Max Connections
+                  visibility: $exists($.data)
+                - source: $parent.connectTimeout
+                  name: Connect Timeout
+                  visibility: $exists($.data)
+                - source: $parent.tcpKeepalive
+                  name: TCP Keep Alive
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.probes
+                      name: Probes
+                    - source: $parent.time
+                      name: Time
+                    - source: $parent.interval
+                      name: Interval
+            - source: $parent.http
+              name: HTTP
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.http1MaxPendingRequests
+                  name: HTTP1 Max Pending Requests
+                  visibility: $exists($.data)
+                - source: $parent.http2MaxRequests
+                  name: HTTP2 Max Requests
+                  visibility: $exists($.data)
+                - source: $parent.maxRequestsPerConnection
+                  name: Max Requests Per Connection
+                  visibility: $exists($.data)
+                - source: $parent.maxRetries
+                  name: Max Retries
+                  visibility: $exists($.data)
+                - source: $parent.idleTimeout
+                  name: Idle Timeout
+                  visibility: $exists($.data)
+                - source: $parent.h2UpgradePolicy
+                  name: H2 Upgrade Policy
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.useClientProtocol
+                  name: Use Client Protocol
+                  visibility: $exists($.data)
+                  widget: Badge
+                  highlights:
+                    positive:
+                      - "true"
+                    negative:
+                      - "false"
+        - source: $parent.outlierDetection
+          name: outlierDetection
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.splitExternalLocalOriginErrors
+              name: Split External Local Origin Errors
+              visibility: $exists($.data)
+              widget: Badge
+              highlights:
+                positive:
+                  - "true"
+                negative:
+                  - "false"
+            - source: $parent.consecutiveLocalOriginFailures
+              name: Consecutive Local Origin Failures
+              visibility: $exists($.data)
+            - source: $parent.consecutiveGatewayErrors
+              name: Consecutive Gateway Errors
+              visibility: $exists($.data)
+              type: number
+            - source: $parent.consecutive5xxErrors
+              name: Consecutive 5xx Errors
+              visibility: $exists($.data)
+            - source: $parent.interval
+              name: Interval
+              visibility: $exists($.data)
+            - source: $parent.baseEjectionTime
+              name: Base Ejection Time
+              visibility: $exists($.data)
+            - source: $parent.maxEjectionPercent
+              name: Max Ejection Percent
+              visibility: $exists($.data)
+            - source: $parent.minHealthPercent
+              name: Min Health Percent
+              visibility: $exists($.data)
+        - source: $parent.tls
+          name: TLS
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.mode
+              name: Mode
+              visibility: $exists($.data)
+              widget: Badge
+            - source: $parent.clientCertificate
+              name: Client Certificate
+              visibility: $exists($.data)
+            - source: $parent.privateKey
+              name: Private Key
+              visibility: $exists($.data)
+              type: number
+            - source: $parent.caCertificates
+              name: CA Certificates
+              visibility: $exists($.data)
+            - source: $parent.credentialName
+              name: Credential Name
+              visibility: $exists($.data)
+            - source: $parent.subjectAltNames
+              name: Subject Alt Names
+              visibility: $exists($.data)
+              widget: Labels
+            - source: $parent.sni
+              name: SNI
+              visibility: $exists($.data)
+            - source: $parent.insecureSkipVerify
+              name: Insecure Skip Verify
+              visibility: $exists($.data)
+              widget: Badge
+        - source: $parent.portLevelSettings
+          name: portLevelSettings
+          widget: Table
+          children:
+            - source: $item.port.number
+              name: port
+          visibility: $count(data)
+          collapsible:
+            - source: $item.loadBalancer
+              name: Load Balancer
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.simple
+                  name: Simple
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.warmupDurationSecs
+                  name: Warmup Duration Secs
+                  visibility: $exists($.data)
+                - source: $parent.consistentHash
+                  name: Consistent Hash
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.httpHeaderName
+                      name: HTTP Header Name
+                      visibility: $exists($.data)
+                    - source: $parent.useSourceIp
+                      name: Use Source IP
+                      visibility: $exists($.data)
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+                    - source: $parent.httpQueryParameterName
+                      name: HTTP Query Parameter Name
+                      visibility: $exists($.data)
+                    - source: $parent.minimumRingSize
+                      name: Minimum Ring Size
+                      visibility: $exists($.data)
+                    - source: $parent.httpCookie
+                      name: HTTP Cookie
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.name
+                          name: Name
+                        - source: $parent.path
+                          name: Path
+                        - source: $parent.ttl
+                          name: TTL
+                - source: $parent.localityLbSetting
+                  name: Locality LB Settings
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - name: Enabled
+                      source: $parent.enabled
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+                    - widget: Table
+                      name: Distribute
+                      visibility: $count(data)
+                      source: $parent.distribute
+                      children:
+                        - source: $item.from
+                          name: From
+                        - source: $item.to
+                          name: To
+                          widget: Labels
+                    - widget: Table
+                      name: Failover
+                      visibility: $count(data)
+                      source: $parent.failover
+                      children:
+                        - source: $item.from
+                          name: From
+                        - source: $item.to
+                          name: To
+                    - name: Failover Priority
+                      source: $parent.failoverPriority
+                      widget: JoinedArray
+                      visibility: $count(data)
+            - source: $item.connectionPool
+              name: Connection Pool
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.tcp
+                  name: TCP
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.maxConnections
+                      name: Max Connections
+                      visibility: $exists($.data)
+                    - source: $parent.connectTimeout
+                      name: Connect Timeout
+                      visibility: $exists($.data)
+                    - source: $parent.tcpKeepalive
+                      name: TCP Keep Alive
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.probes
+                          name: Probes
+                        - source: $parent.time
+                          name: Time
+                        - source: $parent.interval
+                          name: Interval
+                - source: $parent.http
+                  name: HTTP
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.http1MaxPendingRequests
+                      name: HTTP1 Max Pending Requests
+                      visibility: $exists($.data)
+                    - source: $parent.http2MaxRequests
+                      name: HTTP2 Max Requests
+                      visibility: $exists($.data)
+                    - source: $parent.maxRequestsPerConnection
+                      name: Max Requests Per Connection
+                      visibility: $exists($.data)
+                    - source: $parent.maxRetries
+                      name: Max Retries
+                      visibility: $exists($.data)
+                    - source: $parent.idleTimeout
+                      name: Idle Timeout
+                      visibility: $exists($.data)
+                    - source: $parent.h2UpgradePolicy
+                      name: H2 Upgrade Policy
+                      visibility: $exists($.data)
+                      widget: Badge
+                    - source: $parent.useClientProtocol
+                      name: Use Client Protocol
+                      visibility: $exists($.data)
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+            - source: $item.outlierDetection
+              name: outlierDetection
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.splitExternalLocalOriginErrors
+                  name: Split External Local Origin Errors
+                  visibility: $exists($.data)
+                  widget: Badge
+                  highlights:
+                    positive:
+                      - "true"
+                    negative:
+                      - "false"
+                - source: $parent.consecutiveLocalOriginFailures
+                  name: Consecutive Local Origin Failures
+                  visibility: $exists($.data)
+                - source: $parent.consecutiveGatewayErrors
+                  name: Consecutive Gateway Errors
+                  visibility: $exists($.data)
+                  type: number
+                - source: $parent.consecutive5xxErrors
+                  name: Consecutive 5xx Errors
+                  visibility: $exists($.data)
+                - source: $parent.interval
+                  name: Interval
+                  visibility: $exists($.data)
+                - source: $parent.baseEjectionTime
+                  name: Base Ejection Time
+                  visibility: $exists($.data)
+                - source: $parent.maxEjectionPercent
+                  name: Max Ejection Percent
+                  visibility: $exists($.data)
+                - source: $parent.minHealthPercent
+                  name: Min Health Percent
+                  visibility: $exists($.data)
+            - source: $item.tls
+              name: TLS
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.mode
+                  name: Mode
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.clientCertificate
+                  name: Client Certificate
+                  visibility: $exists($.data)
+                - source: $parent.privateKey
+                  name: Private Key
+                  visibility: $exists($.data)
+                  type: number
+                - source: $parent.caCertificates
+                  name: CA Certificates
+                  visibility: $exists($.data)
+                - source: $parent.credentialName
+                  name: Credential Name
+                  visibility: $exists($.data)
+                - source: $parent.subjectAltNames
+                  name: Subject Alt Names
+                  visibility: $exists($.data)
+                  widget: Labels
+                - source: $parent.sni
+                  name: SNI
+                  visibility: $exists($.data)
+                - source: $parent.insecureSkipVerify
+                  name: Insecure Skip Verify
+                  visibility: $exists($.data)
+                  widget: Badge
+            - source: $item.tunnel
+              name: Tunnel
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.protocol
+                  name: Protocol
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.targetHost
+                  name: Target Host
+                  visibility: $exists($.data)
+                - source: $parent.targetPort
+                  name: Target Port
+                  visibility: $exists($.data)
+        - source: $parent.tunnel
+          name: Tunnel
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.protocol
+              name: Protocol
+              visibility: $exists($.data)
+              widget: Badge
+            - source: $parent.targetHost
+              name: Target Host
+              visibility: $exists($.data)
+            - source: $parent.targetPort
+              name: Target Port
+              visibility: $exists($.data)
+    - source: spec.subsets
+      name: Subsets
+      widget: Table
+      visibility: $count(data)
+      children:
+        - source: $item.name
+          name: Name
+        - source: $item.labels
+          name: Labels
+          widget: Labels
+      collapsible:
+        - source: $item.trafficPolicy
+          name: Traffic Policy
+          visibility: $exists($.data)
+          widget: Panel
+          children:
+            - source: $parent.loadBalancer
+              name: Load Balancer
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.simple
+                  name: Simple
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.warmupDurationSecs
+                  name: Warmup Duration Secs
+                  visibility: $exists($.data)
+                - source: $parent.consistentHash
+                  name: Consistent Hash
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.httpHeaderName
+                      name: HTTP Header Name
+                      visibility: $exists($.data)
+                    - source: $parent.useSourceIp
+                      name: Use Source IP
+                      visibility: $exists($.data)
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+                    - source: $parent.httpQueryParameterName
+                      name: HTTP Query Parameter Name
+                      visibility: $exists($.data)
+                    - source: $parent.minimumRingSize
+                      name: Minimum Ring Size
+                      visibility: $exists($.data)
+                    - source: $parent.httpCookie
+                      name: HTTP Cookie
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.name
+                          name: Name
+                        - source: $parent.path
+                          name: Path
+                        - source: $parent.ttl
+                          name: TTL
+                - source: $parent.localityLbSetting
+                  name: Locality LB Settings
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - name: Enabled
+                      source: $parent.enabled
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+                    - widget: Table
+                      name: Distribute
+                      visibility: $count(data)
+                      source: $parent.distribute
+                      children:
+                        - source: $item.from
+                          name: From
+                        - source: $item.to
+                          name: To
+                          widget: Labels
+                    - widget: Table
+                      name: Failover
+                      visibility: $count(data)
+                      source: $parent.failover
+                      children:
+                        - source: $item.from
+                          name: From
+                        - source: $item.to
+                          name: To
+                    - name: Failover Priority
+                      source: $parent.failoverPriority
+                      widget: JoinedArray
+                      visibility: $count(data)
+            - source: $parent.connectionPool
+              name: Connection Pool
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.tcp
+                  name: TCP
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.maxConnections
+                      name: Max Connections
+                      visibility: $exists($.data)
+                    - source: $parent.connectTimeout
+                      name: Connect Timeout
+                      visibility: $exists($.data)
+                    - source: $parent.tcpKeepalive
+                      name: TCP Keep Alive
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.probes
+                          name: Probes
+                        - source: $parent.time
+                          name: Time
+                        - source: $parent.interval
+                          name: Interval
+                - source: $parent.http
+                  name: HTTP
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.http1MaxPendingRequests
+                      name: HTTP1 Max Pending Requests
+                      visibility: $exists($.data)
+                    - source: $parent.http2MaxRequests
+                      name: HTTP2 Max Requests
+                      visibility: $exists($.data)
+                    - source: $parent.maxRequestsPerConnection
+                      name: Max Requests Per Connection
+                      visibility: $exists($.data)
+                    - source: $parent.maxRetries
+                      name: Max Retries
+                      visibility: $exists($.data)
+                    - source: $parent.idleTimeout
+                      name: Idle Timeout
+                      visibility: $exists($.data)
+                    - source: $parent.h2UpgradePolicy
+                      name: H2 Upgrade Policy
+                      visibility: $exists($.data)
+                      widget: Badge
+                    - source: $parent.useClientProtocol
+                      name: Use Client Protocol
+                      visibility: $exists($.data)
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+            - source: $parent.outlierDetection
+              name: outlierDetection
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.splitExternalLocalOriginErrors
+                  name: Split External Local Origin Errors
+                  visibility: $exists($.data)
+                  widget: Badge
+                  highlights:
+                    positive:
+                      - "true"
+                    negative:
+                      - "false"
+                - source: $parent.consecutiveLocalOriginFailures
+                  name: Consecutive Local Origin Failures
+                  visibility: $exists($.data)
+                - source: $parent.consecutiveGatewayErrors
+                  name: Consecutive Gateway Errors
+                  visibility: $exists($.data)
+                  type: number
+                - source: $parent.consecutive5xxErrors
+                  name: Consecutive 5xx Errors
+                  visibility: $exists($.data)
+                - source: $parent.interval
+                  name: Interval
+                  visibility: $exists($.data)
+                - source: $parent.baseEjectionTime
+                  name: Base Ejection Time
+                  visibility: $exists($.data)
+                - source: $parent.maxEjectionPercent
+                  name: Max Ejection Percent
+                  visibility: $exists($.data)
+                - source: $parent.minHealthPercent
+                  name: Min Health Percent
+                  visibility: $exists($.data)
+            - source: $parent.tls
+              name: TLS
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.mode
+                  name: Mode
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.clientCertificate
+                  name: Client Certificate
+                  visibility: $exists($.data)
+                - source: $parent.privateKey
+                  name: Private Key
+                  visibility: $exists($.data)
+                  type: number
+                - source: $parent.caCertificates
+                  name: CA Certificates
+                  visibility: $exists($.data)
+                - source: $parent.credentialName
+                  name: Credential Name
+                  visibility: $exists($.data)
+                - source: $parent.subjectAltNames
+                  name: Subject Alt Names
+                  visibility: $exists($.data)
+                  widget: Labels
+                - source: $parent.sni
+                  name: SNI
+                  visibility: $exists($.data)
+                - source: $parent.insecureSkipVerify
+                  name: Insecure Skip Verify
+                  visibility: $exists($.data)
+                  widget: Badge
+            - source: $parent.portLevelSettings
+              name: portLevelSettings
+              widget: Table
+              children:
+                - source: $item.port.number
+                  name: port
+              visibility: $count(data)
+              collapsible:
+                - source: $item.loadBalancer
+                  name: Load Balancer
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.simple
+                      name: Simple
+                      visibility: $exists($.data)
+                      widget: Badge
+                    - source: $parent.warmupDurationSecs
+                      name: Warmup Duration Secs
+                      visibility: $exists($.data)
+                    - source: $parent.consistentHash
+                      name: Consistent Hash
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.httpHeaderName
+                          name: HTTP Header Name
+                          visibility: $exists($.data)
+                        - source: $parent.useSourceIp
+                          name: Use Source IP
+                          visibility: $exists($.data)
+                          widget: Badge
+                          highlights:
+                            positive:
+                              - "true"
+                            negative:
+                              - "false"
+                        - source: $parent.httpQueryParameterName
+                          name: HTTP Query Parameter Name
+                          visibility: $exists($.data)
+                        - source: $parent.minimumRingSize
+                          name: Minimum Ring Size
+                          visibility: $exists($.data)
+                        - source: $parent.httpCookie
+                          name: HTTP Cookie
+                          visibility: $exists($.data)
+                          widget: Panel
+                          children:
+                            - source: $parent.name
+                              name: Name
+                            - source: $parent.path
+                              name: Path
+                            - source: $parent.ttl
+                              name: TTL
+                    - source: $parent.localityLbSetting
+                      name: Locality LB Settings
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - name: Enabled
+                          source: $parent.enabled
+                          widget: Badge
+                          highlights:
+                            positive:
+                              - "true"
+                            negative:
+                              - "false"
+                        - widget: Table
+                          name: Distribute
+                          visibility: $count(data)
+                          source: $parent.distribute
+                          children:
+                            - source: $item.from
+                              name: From
+                            - source: $item.to
+                              name: To
+                              widget: Labels
+                        - widget: Table
+                          name: Failover
+                          visibility: $count(data)
+                          source: $parent.failover
+                          children:
+                            - source: $item.from
+                              name: From
+                            - source: $item.to
+                              name: To
+                        - name: Failover Priority
+                          source: $parent.failoverPriority
+                          widget: JoinedArray
+                          visibility: $count(data)
+                - source: $item.connectionPool
+                  name: Connection Pool
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.tcp
+                      name: TCP
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.maxConnections
+                          name: Max Connections
+                          visibility: $exists($.data)
+                        - source: $parent.connectTimeout
+                          name: Connect Timeout
+                          visibility: $exists($.data)
+                        - source: $parent.tcpKeepalive
+                          name: TCP Keep Alive
+                          visibility: $exists($.data)
+                          widget: Panel
+                          children:
+                            - source: $parent.probes
+                              name: Probes
+                            - source: $parent.time
+                              name: Time
+                            - source: $parent.interval
+                              name: Interval
+                    - source: $parent.http
+                      name: HTTP
+                      visibility: $exists($.data)
+                      widget: Panel
+                      children:
+                        - source: $parent.http1MaxPendingRequests
+                          name: HTTP1 Max Pending Requests
+                          visibility: $exists($.data)
+                        - source: $parent.http2MaxRequests
+                          name: HTTP2 Max Requests
+                          visibility: $exists($.data)
+                        - source: $parent.maxRequestsPerConnection
+                          name: Max Requests Per Connection
+                          visibility: $exists($.data)
+                        - source: $parent.maxRetries
+                          name: Max Retries
+                          visibility: $exists($.data)
+                        - source: $parent.idleTimeout
+                          name: Idle Timeout
+                          visibility: $exists($.data)
+                        - source: $parent.h2UpgradePolicy
+                          name: H2 Upgrade Policy
+                          visibility: $exists($.data)
+                          widget: Badge
+                        - source: $parent.useClientProtocol
+                          name: Use Client Protocol
+                          visibility: $exists($.data)
+                          widget: Badge
+                          highlights:
+                            positive:
+                              - "true"
+                            negative:
+                              - "false"
+                - source: $item.outlierDetection
+                  name: outlierDetection
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.splitExternalLocalOriginErrors
+                      name: Split External Local Origin Errors
+                      visibility: $exists($.data)
+                      widget: Badge
+                      highlights:
+                        positive:
+                          - "true"
+                        negative:
+                          - "false"
+                    - source: $parent.consecutiveLocalOriginFailures
+                      name: Consecutive Local Origin Failures
+                      visibility: $exists($.data)
+                    - source: $parent.consecutiveGatewayErrors
+                      name: Consecutive Gateway Errors
+                      visibility: $exists($.data)
+                      type: number
+                    - source: $parent.consecutive5xxErrors
+                      name: Consecutive 5xx Errors
+                      visibility: $exists($.data)
+                    - source: $parent.interval
+                      name: Interval
+                      visibility: $exists($.data)
+                    - source: $parent.baseEjectionTime
+                      name: Base Ejection Time
+                      visibility: $exists($.data)
+                    - source: $parent.maxEjectionPercent
+                      name: Max Ejection Percent
+                      visibility: $exists($.data)
+                    - source: $parent.minHealthPercent
+                      name: Min Health Percent
+                      visibility: $exists($.data)
+                - source: $item.tls
+                  name: TLS
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.mode
+                      name: Mode
+                      visibility: $exists($.data)
+                      widget: Badge
+                    - source: $parent.clientCertificate
+                      name: Client Certificate
+                      visibility: $exists($.data)
+                    - source: $parent.privateKey
+                      name: Private Key
+                      visibility: $exists($.data)
+                      type: number
+                    - source: $parent.caCertificates
+                      name: CA Certificates
+                      visibility: $exists($.data)
+                    - source: $parent.credentialName
+                      name: Credential Name
+                      visibility: $exists($.data)
+                    - source: $parent.subjectAltNames
+                      name: Subject Alt Names
+                      visibility: $exists($.data)
+                      widget: Labels
+                    - source: $parent.sni
+                      name: SNI
+                      visibility: $exists($.data)
+                    - source: $parent.insecureSkipVerify
+                      name: Insecure Skip Verify
+                      visibility: $exists($.data)
+                      widget: Badge
+                - source: $item.tunnel
+                  name: Tunnel
+                  visibility: $exists($.data)
+                  widget: Panel
+                  children:
+                    - source: $parent.protocol
+                      name: Protocol
+                      visibility: $exists($.data)
+                      widget: Badge
+                    - source: $parent.targetHost
+                      name: Target Host
+                      visibility: $exists($.data)
+                    - source: $parent.targetPort
+                      name: Target Port
+                      visibility: $exists($.data)
+            - source: $parent.tunnel
+              name: Tunnel
+              visibility: $exists($.data)
+              widget: Panel
+              children:
+                - source: $parent.protocol
+                  name: Protocol
+                  visibility: $exists($.data)
+                  widget: Badge
+                - source: $parent.targetHost
+                  name: Target Host
+                  visibility: $exists($.data)
+                - source: $parent.targetPort
+                  name: Target Port
+                  visibility: $exists($.data)
+form:
+  - simple: true
+    path: spec.host
+    name: Host
+    required: true
+  - widget: FormGroup
+    path: spec.trafficPolicy
+    name: Traffic Policy
+    children:
+      - widget: FormGroup
+        path: loadBalancer
+        name: Load Balancer
+        children:
+          - var: mainloadBalancerSelector
+            name: ChooseLoadBalancerSelector
+            type: string
+            enum:
+              - simple
+              - consistentHash
+          - path: simple
+            name: Simple
+            required: true
+            visibility: $mainloadBalancerSelector = 'simple'
+          - widget: FormGroup
+            path: consistentHash
+            name: Consistent Hash
+            visibility: $mainloadBalancerSelector = 'consistentHash'
+            children:
+              - var: mainconsistentHashSelector
+                name: ChooseConsistentHashSelector
+                type: string
+                enum:
+                  - httpHeaderName
+                  - httpCookie
+                  - useSourceIp
+                  - httpQueryParameterName
+              - path: httpHeaderName
+                name: HTTP Header Name
+                required: true
+                visibility: $mainconsistentHashSelector = 'httpHeaderName'
+              - path: httpCookie
+                name: HTTP Cookie
+                widget: FormGroup
+                visibility: $mainconsistentHashSelector  = 'httpCookie'
+                children:
+                  - path: name
+                    name: Name
+                    required: true
+                  - path: path
+                    name: Path
+                  - path: ttl
+                    name: TTL
+                    required: true
+              - path: useSourceIp
+                name: Use Source IP
+                required: true
+                visibility: $mainconsistentHashSelector = 'useSourceIp'
+              - path: httpQueryParameterName
+                name: HTTP Query Parameter Name
+                required: true
+                visibility: $mainconsistentHashSelector= 'httpQueryParameterName'
+              - path: minimumRingSize
+                name: Minimum Ring Size
+          - path: localityLbSetting
+            name: Locality LB Settings
+            widget: FormGroup
+            children:
+              - path: enabled
+                name: Enabled
+                type: boolean
+              - var: mainLbSelector
+                name: ChooseLbSelector
+                type: string
+                enum:
+                  - distribute
+                  - failover
+              - path: distribute
+                name: Distribute
+                widget: GenericList
+                visibility: $mainLbSelector  = 'distribute'
+              - path: distribute[].from
+                name: From
+              - path: distribute[].to
+                name: To
+                widget: KeyValuePair
+                value:
+                  type: number
+              - path: failover
+                name: Failover
+                widget: GenericList
+                visibility: $mainLbSelector  = 'failover'
+              - path: failover[].from
+                name: From
+              - path: failover[].to
+                name: To
+              - path: failoverPriority
+                name: Failover Priority
+                visibility: $mainLbSelector  = 'failover'
+                widget: SimpleList
+                children:
+                  - path: "[]"
+          - path: warmupDurationSecs
+            name: Warmup Duration Secs
+      - path: connectionPool
+        name: Connection Pool
+        widget: FormGroup
+        children:
+          - path: tcp
+            name: TCP
+            widget: FormGroup
+            children:
+              - path: maxConnections
+                name: Max Connections
+              - path: connectTimeout
+                name: Connect Timeout
+              - path: tcpKeepalive
+                name: TCP Keep Alive
+                widget: FormGroup
+                children:
+                  - path: probes
+                    name: Probes
+                  - path: time
+                    name: Time
+                  - path: interval
+                    name: Interval
+          - path: http
+            name: HTTP
+            widget: FormGroup
+            children:
+              - path: http1MaxPendingRequests
+                name: HTTP1 Max Pending Requests
+              - path: http2MaxRequests
+                name: HTTP2 Max Requests
+              - path: maxRequestsPerConnection
+                name: Max Requests Per Connection
+              - path: maxRetries
+                name: Max Retries
+              - path: idleTimeout
+                name: Idle Timeout
+              - path: h2UpgradePolicy
+                name: H2 Upgrade Policy
+              - path: useClientProtocol
+                name: Use Client Protocol
+      - path: outlierDetection
+        widget: FormGroup
+        children:
+          - path: splitExternalLocalOriginErrors
+            name: Split External Local Origin Errors
+          - path: consecutiveLocalOriginFailures
+            name: Consecutive Local Origin Failures
+            type: number
+          - path: consecutiveGatewayErrors
+            name: Consecutive Gateway Errors
+            type: number
+          - path: consecutive5xxErrors
+            name: Consecutive 5xx Errors
+            type: number
+          - path: interval
+            name: Interval
+          - path: baseEjectionTime
+            name: Base Ejection Time
+          - path: maxEjectionPercent
+            name: Max Ejection Percent
+          - path: minHealthPercent
+            name: Min Health Percent
+      - path: tls
+        name: TLS
+        widget: FormGroup
+        children:
+          - path: mode
+            name: Mode
+          - path: clientCertificate
+            name: Client Certificate
+          - path: privateKey
+            name: Private Key
+          - path: caCertificates
+            name: CA Certificates
+          - path: credentialName
+            name: Credential Name
+          - path: subjectAltNames
+            name: Subject Alt Names
+            widget: SimpleList
+            children:
+              - path: "[]"
+          - path: sni
+            name: SNI
+          - path: insecureSkipVerify
+            name: Insecure Skip Verify
+      - path: portLevelSettings
+        name: Port Level Settings
+        widget: GenericList
+        children:
+          - path: "[].port.number"
+            name: Port Number
+          - widget: FormGroup
+            path: "[].loadBalancer"
+            name: Load Balancer
+            children:
+              - var: portLevelloadBalancerSelector
+                name: ChooseLoadBalancerSelector
+                type: string
+                enum:
+                  - simple
+                  - consistentHash
+              - path: simple
+                name: Simple
+                required: true
+                visibility: $portLevelloadBalancerSelector = 'simple'
+              - widget: FormGroup
+                path: consistentHash
+                name: Consistent Hash
+                visibility: $portLevelloadBalancerSelector = 'consistentHash'
+                children:
+                  - var: portLevelconsistentHashSelector
+                    name: ChooseConsistentHashSelector
+                    type: string
+                    enum:
+                      - httpHeaderName
+                      - httpCookie
+                      - useSourceIp
+                      - httpQueryParameterName
+                  - path: httpHeaderName
+                    name: HTTP Header Name
+                    required: true
+                    visibility: $portLevelconsistentHashSelector = 'httpHeaderName'
+                  - path: httpCookie
+                    name: HTTP Cookie
+                    widget: FormGroup
+                    visibility: $portLevelconsistentHashSelector  = 'httpCookie'
+                    children:
+                      - path: name
+                        name: Name
+                        required: true
+                      - path: path
+                        name: Path
+                      - path: ttl
+                        name: TTL
+                        required: true
+                  - path: useSourceIp
+                    name: Use Source IP
+                    required: true
+                    visibility: $portLevelconsistentHashSelector = 'useSourceIp'
+                  - path: httpQueryParameterName
+                    name: HTTP Query Parameter Name
+                    required: true
+                    visibility: $portLevelconsistentHashSelector= 'httpQueryParameterName'
+                  - path: minimumRingSize
+                    name: Minimum Ring Size
+              - path: localityLbSetting
+                name: Locality LB Settings
+                widget: FormGroup
+                children:
+                  - path: enabled
+                    name: Enabled
+                    type: boolean
+                  - var: portLevelLbSelector
+                    name: ChooseLbSelector
+                    type: string
+                    enum:
+                      - distribute
+                      - failover
+                  - path: distribute
+                    name: Distribute
+                    widget: GenericList
+                    visibility: $portLevelLbSelector  = 'distribute'
+                  - path: distribute[].from
+                    name: From
+                  - path: distribute[].to
+                    name: To
+                    widget: KeyValuePair
+                    value:
+                      type: number
+                  - path: failover
+                    name: Failover
+                    widget: GenericList
+                    visibility: $portLevelLbSelector  = 'failover'
+                  - path: failover[].from
+                    name: From
+                  - path: failover[].to
+                    name: To
+                  - path: failoverPriority
+                    name: Failover Priority
+                    visibility: $portLevelLbSelector  = 'failover'
+                    widget: SimpleList
+                    children:
+                      - path: "[]"
+              - path: warmupDurationSecs
+                name: Warmup Duration Secs
+          - path: "[].connectionPool"
+            name: Connection Pool
+            widget: FormGroup
+            children:
+              - path: tcp
+                name: TCP
+                widget: FormGroup
+                children:
+                  - path: maxConnections
+                    name: Max Connections
+                  - path: connectTimeout
+                    name: Connect Timeout
+                  - path: tcpKeepalive
+                    name: TCP Keep Alive
+                    widget: FormGroup
+                    children:
+                      - path: probes
+                        name: Probes
+                      - path: time
+                        name: Time
+                      - path: interval
+                        name: Interval
+              - path: http
+                name: HTTP
+                widget: FormGroup
+                children:
+                  - path: http1MaxPendingRequests
+                    name: HTTP1 Max Pending Requests
+                  - path: http2MaxRequests
+                    name: HTTP2 Max Requests
+                  - path: maxRequestsPerConnection
+                    name: Max Requests Per Connection
+                  - path: maxRetries
+                    name: Max Retries
+                  - path: idleTimeout
+                    name: Idle Timeout
+                  - path: h2UpgradePolicy
+                    name: H2 Upgrade Policy
+                  - path: useClientProtocol
+                    name: Use Client Protocol
+          - path: "[].outlierDetection"
+            widget: FormGroup
+            children:
+              - path: splitExternalLocalOriginErrors
+                name: Split External Local Origin Errors
+              - path: consecutiveLocalOriginFailures
+                name: Consecutive Local Origin Failures
+                type: number
+              - path: consecutiveGatewayErrors
+                name: Consecutive Gateway Errors
+                type: number
+              - path: consecutive5xxErrors
+                name: Consecutive 5xx Errors
+                type: number
+              - path: interval
+                name: Interval
+              - path: baseEjectionTime
+                name: Base Ejection Time
+              - path: maxEjectionPercent
+                name: Max Ejection Percent
+              - path: minHealthPercent
+                name: Min Health Percent
+          - path: "[].tls"
+            name: TLS
+            widget: FormGroup
+            children:
+              - path: mode
+                name: Mode
+              - path: clientCertificate
+                name: Client Certificate
+              - path: privateKey
+                name: Private Key
+              - path: caCertificates
+                name: CA Certificates
+              - path: credentialName
+                name: Credential Name
+              - path: subjectAltNames
+                name: Subject Alt Names
+                widget: SimpleList
+                children:
+                  - path: "[]"
+              - path: sni
+                name: SNI
+              - path: insecureSkipVerify
+                name: Insecure Skip Verify
+      - path: tunnel
+        name: Tunnel
+        widget: FormGroup
+        children:
+          - path: protocol
+            name: Protocol
+          - path: targetHost
+            name: Target Host
+          - path: targetPort
+            name: Target Port
+  - path: spec.subsets
+    name: Subsets
+    widget: GenericList
+    children:
+      - path: "[].name"
+        name: Name
+      - path: "[].labels"
+        name: Labels
+        widget: KeyValuePair
+      - path: "[].trafficPolicy"
+        name: Traffic Policy
+        children:
+          - widget: FormGroup
+            path: loadBalancer
+            name: Load Balancer
+            children:
+              - var: subsetsloadBalancerSelector
+                name: ChooseLoadBalancerSelector
+                type: string
+                enum:
+                  - simple
+                  - consistentHash
+              - path: simple
+                name: Simple
+                required: true
+                visibility: $subsetsloadBalancerSelector = 'simple'
+              - widget: FormGroup
+                path: consistentHash
+                name: Consistent Hash
+                visibility: $subsetsloadBalancerSelector = 'consistentHash'
+                children:
+                  - var: subsetsconsistentHashSelector
+                    name: ChooseConsistentHashSelector
+                    type: string
+                    enum:
+                      - httpHeaderName
+                      - httpCookie
+                      - useSourceIp
+                      - httpQueryParameterName
+                  - path: httpHeaderName
+                    name: HTTP Header Name
+                    required: true
+                    visibility: $subsetsconsistentHashSelector = 'httpHeaderName'
+                  - path: httpCookie
+                    name: HTTP Cookie
+                    widget: FormGroup
+                    visibility: $subsetsconsistentHashSelector  = 'httpCookie'
+                    children:
+                      - path: name
+                        name: Name
+                        required: true
+                      - path: path
+                        name: Path
+                      - path: ttl
+                        name: TTL
+                        required: true
+                  - path: useSourceIp
+                    name: Use Source IP
+                    required: true
+                    visibility: $subsetsconsistentHashSelector = 'useSourceIp'
+                  - path: httpQueryParameterName
+                    name: HTTP Query Parameter Name
+                    required: true
+                    visibility: $subsetsconsistentHashSelector= 'httpQueryParameterName'
+                  - path: minimumRingSize
+                    name: Minimum Ring Size
+              - path: localityLbSetting
+                name: Locality LB Settings
+                widget: FormGroup
+                children:
+                  - path: enabled
+                    name: Enabled
+                    type: boolean
+                  - var: subsetsLbSelector
+                    name: ChooseLbSelector
+                    type: string
+                    enum:
+                      - distribute
+                      - failover
+                  - path: distribute
+                    name: Distribute
+                    widget: GenericList
+                    visibility: $subsetsLbSelector  = 'distribute'
+                  - path: distribute[].from
+                    name: From
+                  - path: distribute[].to
+                    name: To
+                    widget: KeyValuePair
+                    value:
+                      type: number
+                  - path: failover
+                    name: Failover
+                    widget: GenericList
+                    visibility: $subsetsLbSelector  = 'failover'
+                  - path: failover[].from
+                    name: From
+                  - path: failover[].to
+                    name: To
+                  - path: failoverPriority
+                    name: Failover Priority
+                    visibility: $subsetsLbSelector  = 'failover'
+                    widget: SimpleList
+                    children:
+                      - path: "[]"
+              - path: warmupDurationSecs
+                name: Warmup Duration Secs
+          - path: connectionPool
+            name: Connection Pool
+            widget: FormGroup
+            children:
+              - path: tcp
+                name: TCP
+                widget: FormGroup
+                children:
+                  - path: maxConnections
+                    name: Max Connections
+                  - path: connectTimeout
+                    name: Connect Timeout
+                  - path: tcpKeepalive
+                    name: TCP Keep Alive
+                    widget: FormGroup
+                    children:
+                      - path: probes
+                        name: Probes
+                      - path: time
+                        name: Time
+                      - path: interval
+                        name: Interval
+              - path: http
+                name: HTTP
+                widget: FormGroup
+                children:
+                  - path: http1MaxPendingRequests
+                    name: HTTP1 Max Pending Requests
+                  - path: http2MaxRequests
+                    name: HTTP2 Max Requests
+                  - path: maxRequestsPerConnection
+                    name: Max Requests Per Connection
+                  - path: maxRetries
+                    name: Max Retries
+                  - path: idleTimeout
+                    name: Idle Timeout
+                  - path: h2UpgradePolicy
+                    name: H2 Upgrade Policy
+                  - path: useClientProtocol
+                    name: Use Client Protocol
+          - path: outlierDetection
+            widget: FormGroup
+            children:
+              - path: splitExternalLocalOriginErrors
+                name: Split External Local Origin Errors
+              - path: consecutiveLocalOriginFailures
+                name: Consecutive Local Origin Failures
+                type: number
+              - path: consecutiveGatewayErrors
+                name: Consecutive Gateway Errors
+                type: number
+              - path: consecutive5xxErrors
+                name: Consecutive 5xx Errors
+                type: number
+              - path: interval
+                name: Interval
+              - path: baseEjectionTime
+                name: Base Ejection Time
+              - path: maxEjectionPercent
+                name: Max Ejection Percent
+              - path: minHealthPercent
+                name: Min Health Percent
+          - path: tls
+            name: TLS
+            widget: FormGroup
+            children:
+              - path: mode
+                name: Mode
+              - path: clientCertificate
+                name: Client Certificate
+              - path: privateKey
+                name: Private Key
+              - path: caCertificates
+                name: CA Certificates
+              - path: credentialName
+                name: Credential Name
+              - path: subjectAltNames
+                name: Subject Alt Names
+                widget: SimpleList
+                children:
+                  - path: "[]"
+              - path: sni
+                name: SNI
+              - path: insecureSkipVerify
+                name: Insecure Skip Verify
+          - path: portLevelSettings
+            name: Port Level Settings
+            widget: GenericList
+            children:
+              - path: "[].port.number"
+                name: Port Number
+              - widget: FormGroup
+                path: "[].loadBalancer"
+                name: Load Balancer
+                children:
+                  - var: subsetPortLevelloadBalancerSelector
+                    name: ChooseLoadBalancerSelector
+                    type: string
+                    enum:
+                      - simple
+                      - consistentHash
+                  - path: simple
+                    name: Simple
+                    required: true
+                    visibility: $subsetPortLevelloadBalancerSelector = 'simple'
+                  - widget: FormGroup
+                    path: consistentHash
+                    name: Consistent Hash
+                    visibility: $subsetPortLevelloadBalancerSelector = 'consistentHash'
+                    children:
+                      - var: subsetPortLevelconsistentHashSelector
+                        name: ChooseConsistentHashSelector
+                        type: string
+                        enum:
+                          - httpHeaderName
+                          - httpCookie
+                          - useSourceIp
+                          - httpQueryParameterName
+                      - path: httpHeaderName
+                        name: HTTP Header Name
+                        required: true
+                        visibility: >-
+                          $subsetPortLevelconsistentHashSelector =
+                          'httpHeaderName'
+                      - path: httpCookie
+                        name: HTTP Cookie
+                        widget: FormGroup
+                        visibility: $subsetPortLevelconsistentHashSelector  = 'httpCookie'
+                        children:
+                          - path: name
+                            name: Name
+                            required: true
+                          - path: path
+                            name: Path
+                          - path: ttl
+                            name: TTL
+                            required: true
+                      - path: useSourceIp
+                        name: Use Source IP
+                        required: true
+                        visibility: $subsetPortLevelconsistentHashSelector = 'useSourceIp'
+                      - path: httpQueryParameterName
+                        name: HTTP Query Parameter Name
+                        required: true
+                        visibility: >-
+                          $subsetPortLevelconsistentHashSelector=
+                          'httpQueryParameterName'
+                      - path: minimumRingSize
+                        name: Minimum Ring Size
+                  - path: localityLbSetting
+                    name: Locality LB Settings
+                    widget: FormGroup
+                    children:
+                      - path: enabled
+                        name: Enabled
+                        type: boolean
+                      - var: subsetPortLevelLbSelector
+                        name: ChooseLbSelector
+                        type: string
+                        enum:
+                          - distribute
+                          - failover
+                      - path: distribute
+                        name: Distribute
+                        widget: GenericList
+                        visibility: $subsetPortLevelLbSelector  = 'distribute'
+                      - path: distribute[].from
+                        name: From
+                      - path: distribute[].to
+                        name: To
+                        widget: KeyValuePair
+                        value:
+                          type: number
+                      - path: failover
+                        name: Failover
+                        widget: GenericList
+                        visibility: $subsetPortLevelLbSelector  = 'failover'
+                      - path: failover[].from
+                        name: From
+                      - path: failover[].to
+                        name: To
+                      - path: failoverPriority
+                        name: Failover Priority
+                        visibility: $subsetPortLevelLbSelector  = 'failover'
+                        widget: SimpleList
+                        children:
+                          - path: "[]"
+                  - path: warmupDurationSecs
+                    name: Warmup Duration Secs
+              - path: "[].connectionPool"
+                name: Connection Pool
+                widget: FormGroup
+                children:
+                  - path: tcp
+                    name: TCP
+                    widget: FormGroup
+                    children:
+                      - path: maxConnections
+                        name: Max Connections
+                      - path: connectTimeout
+                        name: Connect Timeout
+                      - path: tcpKeepalive
+                        name: TCP Keep Alive
+                        widget: FormGroup
+                        children:
+                          - path: probes
+                            name: Probes
+                          - path: time
+                            name: Time
+                          - path: interval
+                            name: Interval
+                  - path: http
+                    name: HTTP
+                    widget: FormGroup
+                    children:
+                      - path: http1MaxPendingRequests
+                        name: HTTP1 Max Pending Requests
+                      - path: http2MaxRequests
+                        name: HTTP2 Max Requests
+                      - path: maxRequestsPerConnection
+                        name: Max Requests Per Connection
+                      - path: maxRetries
+                        name: Max Retries
+                      - path: idleTimeout
+                        name: Idle Timeout
+                      - path: h2UpgradePolicy
+                        name: H2 Upgrade Policy
+                      - path: useClientProtocol
+                        name: Use Client Protocol
+              - path: "[].outlierDetection"
+                widget: FormGroup
+                children:
+                  - path: splitExternalLocalOriginErrors
+                    name: Split External Local Origin Errors
+                  - path: consecutiveLocalOriginFailures
+                    name: Consecutive Local Origin Failures
+                    type: number
+                  - path: consecutiveGatewayErrors
+                    name: Consecutive Gateway Errors
+                    type: number
+                  - path: consecutive5xxErrors
+                    name: Consecutive 5xx Errors
+                    type: number
+                  - path: interval
+                    name: Interval
+                  - path: baseEjectionTime
+                    name: Base Ejection Time
+                  - path: maxEjectionPercent
+                    name: Max Ejection Percent
+                  - path: minHealthPercent
+                    name: Min Health Percent
+              - path: "[].tls"
+                name: TLS
+                widget: FormGroup
+                children:
+                  - path: mode
+                    name: Mode
+                  - path: clientCertificate
+                    name: Client Certificate
+                  - path: privateKey
+                    name: Private Key
+                  - path: caCertificates
+                    name: CA Certificates
+                  - path: credentialName
+                    name: Credential Name
+                  - path: subjectAltNames
+                    name: Subject Alt Names
+                    widget: SimpleList
+                    children:
+                      - path: "[]"
+                  - path: sni
+                    name: SNI
+                  - path: insecureSkipVerify
+                    name: Insecure Skip Verify
+          - path: tunnel
+            name: Tunnel
+            widget: FormGroup
+            children:
+              - path: protocol
+                name: Protocol
+              - path: targetHost
+                name: Target Host
+              - path: targetPort
+                name: Target Port
+  - path: spec.exportTo
+    name: Export To
+    widget: SimpleList
+    children:
+      - path: "[]"
+  - path: spec.workloadSelector.matchLabels
+    name: Workload Selector Match Labels
+    widget: KeyValuePair
+list:
+  - source: spec.host
+    name: Host
+translations:
+  en:
+    metadata.annotations: Annotations
+    metadata.labels: Labels
+    metadata.creationTimestamp: Created at
+    resource.description: >-
+      {{[Destination
+      Rule](https://istio.io/latest/docs/reference/config/networking/destination-rule)}}
+      specifies rules that apply to traffic intended for a service after
+      routing.
+    References: References
+    probes: Probes
+    Export To: Export To
+    Workload Selector Match Labels: Workload Selector Match Labels
+    Traffic Policy: Traffic Policy
+    Interval: Interval
+    Name: Name
+    time: Time
+    interval: Interval
+    Host: Host
+    Connection Pool: Connection Pool
+    TCP Keep Alive: TCP Keep Alive
+    Probes: Probes
+    Time: Time
+    TCP: TCP
+    HTTP: HTTP
+    HTTP1 Max Pending Requests: HTTP1 Max Pending Requests
+    Max Connections: Max Connections
+    Connect Timeout: Connect Timeout
+    HTTP2 Max Requests: HTTP2 Max Requests
+    Max Requests Per Connection: Max Requests Per Connection
+    Max Retries: Max Retries
+    Idle Timeout: Idle Timeout
+    H2 Upgrade Policy: H2 Upgrade Policy
+    Use Client Protocol: Use Client Protocol
+    Locality LB Settings: Locality LB Settings
+    Enabled: Enabled
+    Distribute: Distribute
+    From: From
+    To: To
+    Failover: Failover
+    Failover Priority: Failover Priority
+    HTTP Cookie: HTTP Cookie
+    Path: Path
+    TTL: TTL
+    Consistent Hash: Consistent Hash
+    HTTP Header Name: HTTP Header Name
+    Use Source IP: Use Source IP
+    HTTP Query Parameter Name: HTTP Query Parameter Name
+    Minimum Ring Size: Minimum Ring Size
+    Load Balancer: Load Balancer
+    Simple: Simple
+    Warmup Duration Secs: Warmup Duration Secs
+    ChooseConsistentHashSelector: Select Hash Type
+    ChooseLoadBalancerSelector: Select Balancer Type
+    ChooseLbSelector: Select LB Settings
+    Split External Local Origin Errors: Split External Local Origin Errors
+    Consecutive Local Origin Failures: Consecutive Local Origin Failures
+    Consecutive Gateway Errors: Consecutive Gateway Errors
+    Consecutive 5xx Errors: Consecutive 5xx Errors
+    Base Ejection Time: Base Ejection Time
+    Max Ejection Percent: Max Ejection Percent
+    Min Health Percent: Min Health Percent
+    Port Level Settings: Port Level Settings
+    Port Number: Port Number
+    TLS: TLS
+    Mode: Mode
+    Client Certificate: Client Certificate
+    Private Key: Private Key
+    CA Certificates: CA Certificates
+    Credential Name: Credential Name
+    Subject Alt Names: Subject Alt Names
+    SNI: SNI
+    Insecure Skip Verify: Insecure Skip Verify
+    Tunnel: Tunnel
+    Protocol: Protocol
+    Target Host: Target Host
+    Target Port: Target Port
+    Subsets: Subsets
+    Labels: Labels
+---
+dataSources:
+  podSelector:
+    resource:
+      kind: Pod
+      version: v1
+      namespace: null
+    filter: $matchByLabelSelector($item, $root.spec.selector)
+  relatedVirtualServices:
+    resource:
+      kind: VirtualService
+      group: networking.istio.io
+      version: v1beta1
+      namespace: null
+    filter: >-
+      $filter($item.spec.gateways, function($g){$contains($g,'/') ?
+      ($substringBefore($g,'/') = $root.metadata.namespace and
+      $substringAfter($g, '/') = $root.metadata.name) : ($substringBefore($g,
+      '.') = $root.metadata.name and $substringBefore($substringAfter($g, '.'),
+      '.') = $root.metadata.namespace) })
+details:
+  header:
+    - source: spec.selector
+      widget: Labels
+      name: spec.selector
+  body:
+    - widget: Table
+      source: spec.servers
+      name: spec.servers
+      children:
+        - source: port.name
+          name: spec.servers.port.name
+        - widget: JoinedArray
+          separator: break
+          source: hosts
+          name: spec.servers.hosts
+        - source: port.number
+          name: spec.servers.port.number
+        - source: tls.mode
+          name: spec.servers.tls.mode
+        - widget: ResourceLink
+          source: tls.credentialName
+          name: spec.servers.tls.credentialName
+          resource:
+            name: tls.credentialName
+            namespace: '"istio-system"'
+            kind: '"Secret"'
+    - widget: Panel
+      name: spec.selector
+      disablePadding: true
+      children:
+        - source: $podSelector()
+          widget: ResourceList
+          disableCreate: true
+          visibility: $boolean($root.spec.selector)
+        - source: spec.selector
+          widget: Panel
+          name: selector.matchesAllPods
+          visibility: $not($exists($value)) or $not($boolean($value))
+      header:
+        - source: spec.selector
+          widget: Labels
+          name: spec.selector
+          visibility: $boolean($value)
+  resourceGraph:
+    depth: 1
+    colorVariant: 1
+    dataSources:
+      - source: relatedVirtualServices
+form:
+  - path: spec.selector
+    widget: KeyValuePair
+    simple: true
+    required: true
+  - widget: FormGroup
+    simple: true
+    path: spec.servers[].port
+    children:
+      - path: number
+        simple: true
+        required: true
+        inputInfo: inputInfo.spec.servers.port.number
+      - path: name
+        widget: Name
+        inputInfo: null
+        simple: true
+        required: true
+      - path: protocol
+        simple: true
+        enum:
+          - HTTP
+          - HTTPS
+          - HTTP2
+          - GRPC
+          - GRPC-WEB
+          - MONGO
+          - REDIS
+          - MYSQL
+          - TCP
+        required: true
+        placeholder: placeholders.dropdown
+      - path: targetPort
+        simple: true
+  - widget: FormGroup
+    simple: true
+    path: spec.servers[].tls
+    visibility: $item.port.protocol = 'HTTP' or $item.port.protocol = 'HTTPS'
+    children:
+      - path: httpsRedirect
+        simple: true
+        visibility: $item.port.protocol = 'HTTP'
+      - path: mode
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        required: true
+        placeholder: placeholders.dropdown
+      - path: credentialName
+        simple: true
+        widget: Resource
+        resource:
+          kind: Secret
+          version: v1
+          namespace: istio-system
+          scope: namespace
+        filter: >-
+          $item.type = 'kubernetes.io/tls' or ($item.type = 'Opaque' and
+          $contains($item.data, 'key') and $contains($item.data, 'cert'))
+        visibility: $item.port.protocol = 'HTTPS'
+      - path: serverCertificate
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: placeholders.serverCertificate
+      - path: privateKey
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: placeholders.privateKey
+      - path: caCertificates
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: placeholders.caCertificates
+      - simple: true
+        widget: Alert
+        type: warning
+        alert: '"alert.tls.https"'
+        visibility: $item.port.protocol = 'HTTPS'
+  - widget: SimpleList
+    path: spec.servers[].hosts
+    required: true
+    simple: true
+    placeholder: placeholders.hosts
+    children:
+      - path: "[]"
+general:
+  resource:
+    kind: Gateway
+    group: networking.istio.io
+    version: v1beta1
+  urlPath: gateways
+  category: Istio
+  name: Gateways
+  scope: namespace
+  description: >-
+    {{[Gateways](https://istio.io/latest/docs/reference/config/networking/gateway/)}}
+    describes a load balancer that operates at the edge of the mesh and receives
+    incoming or outgoing HTTP/TCP connections.
+list:
+  - name: spec.selector
+    source: spec.selector
+    widget: Labels
+presets:
+  - name: Ingress Gateway
+    value:
+      metadata:
+        name: httpbin-gateway
+        labels:
+          app.kubernetes.io/name: httpbin-gateway
+      spec:
+        selector:
+          istio: ingressgateway
+        servers:
+          - port:
+              number: 443
+              name: https
+              protocol: HTTPS
+            tls:
+              mode: SIMPLE
+              credentialName: ""
+            hosts: []
+translations:
+  en:
+    alert.tls.https: >-
+      TLS Server of mode SIMPLE or MUTUAL needs either credential name, or
+      private key and server certificate pair.
+    spec.selector: Selector
+    spec.gateways: Gateways
+    spec.servers: Servers
+    spec.servers.port: Port
+    spec.servers.port.name: Port Name
+    spec.servers.port.protocol: Protocol
+    spec.servers.port.targetPort: Target Port
+    spec.servers.port.number: Port Number
+    spec.servers.tls: TLS
+    spec.servers.tls.mode: TLS Mode
+    spec.servers.tls.httpsRedirect: HTTP Redirect
+    spec.servers.tls.credentialName: Credential Name
+    spec.servers.tls.serverCertificate: Server Certificate
+    spec.servers.tls.privateKey: Private Key
+    spec.servers.tls.caCertificates: CA Certificate
+    spec.servers.hosts: Hosts
+    selector.matchesAllPods: Matches all Pods in the Namespace
+    placeholders.dropdown: Type or choose an option
+    placeholders.serverCertificate: Enter the certificate path
+    placeholders.privateKey: Enter the private key path
+    placeholders.caCertificates: Enter the CA certificates path
+    placeholders.hosts: For example, *.api.mydomain.com
+    inputInfo.spec.servers.port.number: Must be a on-negative number.
+---
+dataSources:
+  podSelector:
+    resource:
+      kind: Pod
+      version: v1
+    filter: $matchByLabelSelector($item, $root.spec.workloadSelector.labels)
+details:
+  header:
+    - source: spec.location
+      name: spec.location
+    - source: spec.resolution
+      name: spec.resolution
+  resourceGraph:
+    colorVariant: 2
+    dataSources:
+      - source: podSelector
+  body:
+    - name: configuration
+      widget: Panel
+      source: spec
+      visibility: >-
+        $boolean($exists($value.hosts) or $exists($value.addresses) or
+        $exists($value.subjectAltNames))
+      children:
+        - name: spec.hosts
+          source: hosts
+          widget: JoinedArray
+          visibility: $exists($value)
+        - name: spec.addresses
+          source: addresses
+          widget: JoinedArray
+          visibility: $exists($value)
+        - name: spec.exportTo
+          source: exportTo
+          widget: Labels
+          placeholder: Exported to all Namespaces
+        - name: spec.subjectAltNames
+          source: subjectAltNames
+          widget: JoinedArray
+          visibility: $exists($value)
+    - name: spec.ports
+      widget: Table
+      source: spec.ports
+      visibility: $exists($value)
+      children:
+        - name: spec.ports.number
+          source: number
+          sort: true
+        - name: spec.ports.protocol
+          source: protocol
+          sort: true
+        - name: spec.ports.name
+          source: name
+          sort: true
+        - name: spec.ports.targetPort
+          source: targetPort
+          sort: true
+    - name: spec.endpoints
+      widget: Table
+      source: spec.endpoints
+      visibility: $exists($value)
+      children:
+        - name: spec.endpoints.address
+          source: address
+          sort: true
+        - name: spec.endpoints.ports
+          source: ports
+          widget: Labels
+        - name: spec.endpoints.labels
+          source: labels
+          widget: Labels
+        - name: spec.endpoints.network
+          source: network
+          sort: true
+        - name: spec.endpoints.weight
+          source: weight
+        - name: spec.endpoints.serviceAccount
+          source: serviceAccount
+    - name: spec.workloadSelector
+      widget: Panel
+      source: spec.workloadSelector.labels
+      visibility: $exists($value)
+      disablePadding: true
+      children:
+        - source: $podSelector()
+          widget: ResourceList
+          disableCreate: true
+      header:
+        - widget: Labels
+          source: spec.workloadSelector.labels
+          visibility: $exists($value)
+form:
+  - path: spec.hosts
+    name: spec.hosts
+    widget: SimpleList
+    simple: true
+    required: true
+    children:
+      - path: "[]"
+  - path: spec.addresses
+    name: spec.addresses
+    widget: SimpleList
+    placeholder: placeholders.addreses
+    children:
+      - path: "[]"
+  - path: spec.ports
+    name: Ports
+    widget: GenericList
+    children:
+      - path: "[].number"
+        name: spec.ports.number
+        required: true
+      - path: "[].protocol"
+        name: spec.ports.protocol
+        required: true
+        placeholder: placeholders.dropdown
+        enum:
+          - HTTP
+          - HTTPS
+          - GRPC
+          - HTTP2
+          - MONGO
+          - TCP
+          - TLS
+      - path: "[].name"
+        name: spec.ports.name
+        required: true
+      - path: "[].targetPort"
+        name: spec.ports.targetPort
+  - path: spec.location
+    name: spec.location
+    placeholder: placeholders.dropdown
+  - path: spec.resolution
+    name: spec.resolution
+    placeholder: placeholders.dropdown
+  - path: spec.endpoints
+    name: spec.endpoints
+    widget: GenericList
+    children:
+      - path: "[].address"
+        name: spec.endpoints.address
+      - path: "[].ports"
+        name: spec.endpoints.ports
+        widget: KeyValuePair
+        value:
+          type: number
+      - path: "[].labels"
+        name: spec.endpoints.labels
+        widget: KeyValuePair
+      - path: "[].network"
+        name: spec.endpoints.network
+      - path: "[].locality"
+        name: spec.endpoints.locality
+      - path: "[].weight"
+        name: spec.endpoints.weight
+      - path: "[].serviceAccount"
+        name: spec.endpoints.serviceAccount
+  - path: spec.workloadSelector.labels
+    name: spec.workloadSelector
+    widget: KeyValuePair
+  - path: spec.exportTo
+    name: spec.exportTo
+    widget: SimpleList
+    children:
+      - path: "[]"
+  - path: spec.subjectAltNames
+    name: spec.subjectAltNames
+    widget: SimpleList
+    children:
+      - path: "[]"
+general:
+  resource:
+    kind: ServiceEntry
+    group: networking.istio.io
+    version: v1beta1
+  urlPath: serviceentries
+  category: Istio
+  name: Service Entries
+  scope: namespace
+  description: >-
+    {{[ServiceEntry](https://istio.io/latest/docs/reference/config/networking/service-entry/)}}
+    allows for adding more entries to the internal service registry of Istio.
+list:
+  - source: spec.location
+    name: spec.location
+    sort: true
+  - source: spec.resolution
+    name: spec.resolution
+    sort: true
+translations:
+  en:
+    configuration: Configuration
+    spec.hosts: Hosts
+    spec.addresses: Addresses
+    spec.ports: Ports
+    spec.ports.number: Number
+    spec.ports.protocol: Protocol
+    spec.ports.name: Name
+    spec.ports.targetPort: Target Port
+    spec.location: Location
+    spec.resolution: Resolution
+    spec.endpoints: Endpoints
+    spec.endpoints.address: Address
+    spec.endpoints.ports: Ports
+    spec.endpoints.labels: Labels
+    spec.endpoints.network: Network
+    spec.endpoints.locality: Locality
+    spec.endpoints.weight: Weight
+    spec.endpoints.serviceAccount: Service Account
+    spec.workloadSelector: Workload Selector
+    spec.exportTo: Export To
+    spec.subjectAltNames: Subject Alt Names
+    placeholders.dropdown: Type or choose an option
+    placeholders.addreses: For example, 127.0.0.1
+---
+dataSources:
+  podSelector:
+    resource:
+      kind: Pod
+      version: v1
+    filter: $matchByLabelSelector($item, $root.spec.workloadSelector.labels)
+details:
+  header:
+    - name: Outbound Traffic Policy Mode
+      source: spec.outboundTrafficPolicy.mode
+  body:
+    - widget: Table
+      source: spec.egress
+      name: Egress
+      visibility: $exists($value)
+      children:
+        - source: port
+          name: Port
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: number
+              name: Number
+            - source: name
+              name: Name
+            - source: protocol
+              name: Protocol
+            - source: targetPoint
+              name: Target Point
+        - source: bind
+          name: Bind
+        - source: captureMode
+          name: Capture Mode
+        - source: hosts
+          name: Hosts
+          widget: Labels
+    - widget: Table
+      source: spec.ingress
+      name: Ingress
+      visibility: $exists($value)
+      children:
+        - source: port
+          name: Port
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: number
+              name: Number
+            - source: name
+              name: Name
+            - source: protocol
+              name: Protocol
+            - source: targetPoint
+              name: Target Point
+            - source: $parent.tls.mode
+              name: TLS Mode
+        - source: bind
+          name: Bind
+        - source: captureMode
+          name: Capture Mode
+        - source: defaultEndpoint
+          name: Default Endpoint
+          widget: Labels
+    - widget: Panel
+      name: Workload Selector
+      disablePadding: true
+      children:
+        - source: $podSelector()
+          widget: ResourceList
+          disableCreate: true
+          isCompact: true
+          visibility: $boolean($root.spec.workloadSelector.labels)
+        - source: spec.workloadSelector.labels
+          widget: Panel
+          name: Matches all Pods in the Namespace
+          visibility: $not($exists($value)) or $not($boolean($value))
+      header:
+        - source: spec.workloadSelector.labels
+          widget: Labels
+          name: Workload Selector
+          visibility: $boolean($value)
+  resourceGraph:
+    depth: 1
+    colorVariant: 1
+    dataSources:
+      - source: podSelector
+form:
+  - path: spec.workloadSelector.labels
+    name: Workload Selector
+    widget: KeyValuePair
+  - widget: FormGroup
+    path: spec.egress[].port
+    simple: true
+    children:
+      - path: number
+        simple: true
+        required: true
+        placeholder: Enter the port number
+      - path: name
+        widget: Name
+        inputInfo: null
+        simple: true
+        required: true
+      - path: protocol
+        simple: true
+        enum:
+          - HTTP
+          - HTTPS
+          - HTTP2
+          - GRPC
+          - MONGO
+          - TCP
+          - TLS
+        required: true
+        placeholder: Type or choose an option
+      - path: targetPort
+        simple: true
+        placeholder: Enter the target port number
+  - path: spec.egress[].bind
+    placeholder: Enter the IPv4 or IPv6
+    simple: true
+  - path: spec.egress[].captureMode
+    simple: true
+    enum:
+      - DEFAULT
+      - IPTABLES
+      - NONE
+    placeholder: Type or choose an option
+  - widget: SimpleList
+    path: spec.egress[].hosts
+    required: true
+    simple: true
+    placeholder: For example, *.api.mydomain.com
+    children:
+      - path: "[]"
+  - widget: FormGroup
+    path: spec.ingress[].port
+    required: true
+    simple: true
+    children:
+      - path: number
+        simple: true
+        required: true
+        placeholder: Enter the port number
+      - path: name
+        widget: Name
+        inputInfo: null
+        simple: true
+        required: true
+      - path: protocol
+        simple: true
+        enum:
+          - HTTP
+          - HTTPS
+          - HTTP2
+          - GRPC
+          - MONGO
+          - TCP
+          - TLS
+        required: true
+        placeholder: Type or choose an option
+      - path: targetPort
+        simple: true
+        placeholder: Enter the target port number
+  - path: spec.ingress[].bind
+    placeholder: Enter the IPv4 or IPv6
+    simple: true
+  - path: spec.ingress[].captureMode
+    enum:
+      - DEFAULT
+      - IPTABLES
+      - NONE
+    simple: true
+    placeholder: Type or choose an option
+  - path: spec.ingress[].defaultEndpoint
+    placeholder: For example, 127.0.0.1:PORT
+    required: true
+    simple: true
+  - widget: FormGroup
+    simple: true
+    path: spec.ingress[].tls
+    name: TLS
+    visibility: $item.port.protocol = 'HTTPS'
+    children:
+      - path: mode
+        name: TLS Mode
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        required: true
+        placeholder: Type or choose an option
+      - path: serverCertificate
+        name: Server Certificate
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: Enter the certificate path
+      - path: privateKey
+        name: Private Key
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: Enter the private key path
+      - path: caCertificates
+        name: CA Certificate
+        simple: true
+        visibility: $item.port.protocol = 'HTTPS'
+        placeholder: Enter the CA certificates path
+  - widget: FormGroup
+    path: spec.outboundTrafficPolicy
+    name: Outbound Traffic Policy
+    children:
+      - path: mode
+        name: Outbound Traffic Policy Mode
+        enum:
+          - REGISTRY_ONLY
+          - ALLOW_ANY
+        placeholder: Type or choose an option
+general:
+  resource:
+    kind: Sidecar
+    group: networking.istio.io
+    version: v1alpha3
+  urlPath: sidecars
+  category: Istio
+  name: Sidecars
+  scope: namespace
+  description: >-
+    {{[Sidecar](https://istio.io/latest/docs/reference/config/networking/sidecar/)}}
+    manages the incoming and outgoing communication in a workload it is attached
+    to.
+list:
+  - source: spec.outboundTrafficPolicy.mode
+    name: Outbound Traffic Policy Mode
+  - source: spec.workloadSelector.labels
+    name: Workload Selector Labels
+    widget: Labels
+---
+dataSources:
+  relatedGateways:
+    resource:
+      kind: Gateway
+      group: networking.istio.io
+      version: v1beta1
+      namespace: null
+    filter: >-
+      $filter($root.spec.gateways, function($g){$contains($g,'/') ?
+      ($substringBefore($g,'/') = $item.metadata.namespace and
+      $substringAfter($g, '/') = $item.metadata.name) : ($substringBefore($g,
+      '.') = $item.metadata.name and $substringBefore($substringAfter($g, '.'),
+      '.') = $item.metadata.namespace) })
+  relatedServices:
+    resource:
+      kind: Service
+      version: v1
+      namespace: null
+    filter: >-
+      $filter($root.spec.http.route, function($r) { $filter($r.destination.host,
+      function($h){($substringBefore($h, '.') = $item.metadata.name) and
+      ($split($substringAfter($h, '.'),'.')[0] = $item.metadata.namespace)} ) })
+details:
+  resourceGraph:
+    dataSources:
+      - source: relatedGateways
+      - source: relatedServices
+  body:
+    - widget: Table
+      source: spec.gateways[]
+      name: gateways
+      visibility: $exists($value)
+      children:
+        - source: $item
+          name: t-name
+          widget: ResourceLink
+          resource:
+            kind: '"Gateway"'
+            name: >-
+              $contains($item,'/') ? $substringAfter($item, '/') :
+              $substringBefore($item, '.')
+            namespace: >-
+              $contains($item,'/') ? $substringBefore($item, '/'):
+              $substringBefore($substringAfter($item, '.'), '.')
+    - name: summary
+      widget: Panel
+      source: spec
+      visibility: $boolean($exists($item.exportTo) or $exists($item.hosts))
+      children:
+        - name: exportTo
+          source: exportTo
+          widget: Labels
+          visibility: $exists($value)
+        - name: hosts
+          source: hosts
+          widget: JoinedArray
+          visibility: $exists($value)
+    - widget: Table
+      source: spec.http
+      name: http
+      visibility: $exists($value)
+      children:
+        - source: name
+          name: t-name
+        - source: timeout
+          name: timeout
+        - source: mirrorPercentage.value
+          name: mirrorPercentage
+      collapsible:
+        - source: match
+          name: matches
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: name
+              name: t-name
+            - source: uri
+              name: uri
+              widget: Labels
+            - source: scheme
+              name: scheme
+              widget: Labels
+            - source: method
+              name: method
+              widget: Labels
+            - source: authority
+              name: authority
+              widget: Labels
+            - source: headers
+              name: headers
+            - source: port
+              name: port
+            - source: sourceLabels
+              name: sourceLabels
+              widget: Labels
+            - source: gateways
+              name: gateways
+              widget: JoinedArray
+            - source: queryParams
+              name: queryParams
+            - source: ignoreUriCase
+              name: ignoreUriCase
+            - source: withoutHeaders
+              name: withoutHeaders
+            - source: sourceNamespace
+              name: sourceNamespace
+            - source: statPrefix
+              name: statPrefix
+        - source: route
+          name: routes
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: destination
+              name: destination
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: host
+                  name: host
+                - source: subset
+                  name: subset
+                - source: port.number
+                  name: port.number
+            - source: weight
+              name: weight
+            - source: headers
+              name: headers
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: request
+                  name: request
+                  widget: Panel
+                  visibility: $exists($value)
+                  children:
+                    - source: set
+                      name: set
+                      widget: Labels
+                    - source: add
+                      name: add
+                      widget: Labels
+                    - source: remove
+                      name: remove
+                      widget: JoinedArray
+                - source: response
+                  name: response
+                  widget: Panel
+                  visibility: $exists($value)
+                  children:
+                    - source: set
+                      name: set
+                      widget: Labels
+                    - source: add
+                      name: add
+                      widget: Labels
+                    - source: remove
+                      name: remove
+                      widget: JoinedArray
+        - source: redirect
+          name: redirect
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: uri
+              name: uri
+            - source: authority
+              name: authority
+            - source: port
+              name: port
+            - source: derivePort
+              name: derivePort
+              widget: Labels
+            - source: scheme
+              name: scheme
+            - source: redirectCode
+              name: redirectCode
+        - source: directResponse
+          name: directResponse
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: status
+              name: status
+            - source: body
+              name: body
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: string
+                  name: string
+                - source: bytes
+                  name: bytes
+        - source: delegate
+          name: delegate
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: name
+              name: t-name
+            - source: namespace
+              name: namespace
+        - source: rewrite
+          name: rewrite
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: uri
+              name: uri
+            - source: authority
+              name: authority
+        - source: retries
+          name: retries
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: attempts
+              name: attempts
+            - source: perTryTimeout
+              name: perTryTimeout
+            - source: retryOn
+              name: retryOn
+            - source: retryRemoteLocalities
+              name: retryRemoteLocalities
+        - source: fault
+          name: fault
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: delay
+              name: delay
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: fixedDelay
+                  name: fixedDelay
+                - source: percentage.value
+                  name: percentage.value
+                - source: percent
+                  name: percent
+            - source: abort
+              name: Abort
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: httpStatus
+                  name: httpStatus
+                - source: percentage.value
+                  name: percentage.value
+        - source: mirror
+          name: Mirror
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: host
+              name: host
+            - source: subset
+              name: subset
+            - source: port.number
+              name: port.number
+        - source: corsPolicy
+          name: corsPolicy
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: allowOrigins
+              name: allowOrigins
+            - source: allowMethods
+              name: allowMethods
+              widget: JoinedArray
+            - source: allowHeaders
+              name: allowHeaders
+              widget: JoinedArray
+            - source: exposeHeaders
+              name: exposeHeaders
+              widget: JoinedArray
+            - source: maxAge
+              name: maxAge
+            - source: allowCredentials
+              name: allowCredentials
+        - source: headers
+          name: headers
+          widget: Panel
+          visibility: $exists($value)
+          children:
+            - source: request
+              name: request
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: set
+                  name: set
+                  widget: Labels
+                - source: add
+                  name: add
+                  widget: Labels
+                - source: remove
+                  name: remove
+                  widget: JoinedArray
+            - source: response
+              name: response
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: set
+                  name: set
+                  widget: Labels
+                - source: add
+                  name: add
+                  widget: Labels
+                - source: remove
+                  name: remove
+                  widget: JoinedArray
+    - widget: Table
+      source: spec.tcp
+      name: tcp
+      visibility: $exists($value)
+      children:
+        - source: match
+          name: matches
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: destinationSubnets
+              name: destinationSubnets
+              widget: JoinedArray
+            - source: port
+              name: port
+            - source: sourceLabels
+              name: sourceLabels
+              widget: Labels
+            - source: gateways
+              name: gateways
+              widget: JoinedArray
+            - source: sourceNamespace
+              name: sourceNamespace
+      collapsible:
+        - source: route
+          name: routes
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: destination
+              name: destination
+              widget: Panel
+              visibility: $exists($value)
+              children:
+                - source: host
+                  name: host
+                - source: subset
+                  name: subset
+                - source: port.number
+                  name: port
+            - source: weight
+              name: weight
+    - widget: Table
+      source: spec.tls
+      name: tls
+      visibility: $exists($value)
+      children:
+        - source: match
+          name: matches
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: sniHosts
+              name: sniHosts
+              widget: JoinedArray
+            - source: destinationSubnets
+              name: destinationSubnets
+              widget: JoinedArray
+            - source: port
+              name: port
+            - source: sourceLabels
+              name: sourceLabels
+              widget: Labels
+            - source: gateways
+              name: gateways
+              widget: JoinedArray
+            - source: sourceNamespace
+              name: sourceNamespace
+      collapsible:
+        - source: route
+          name: routes
+          widget: Table
+          visibility: $exists($value)
+          children:
+            - source: destination
+              name: destination
+              widget: Panel
+              children:
+                - source: host
+                  name: host
+                - source: subset
+                  name: subset
+                - source: port.number
+                  name: port.number
+            - source: weight
+              name: weight
+form:
+  - path: spec.tls
+    widget: GenericList
+    name: tls
+    children:
+      - path: "[].match"
+        widget: GenericList
+        name: matches
+        children:
+          - path: "[].sniHosts"
+            widget: SimpleList
+            name: sniHosts
+            children:
+              - path: "[]"
+          - path: "[].sourceNamespace"
+            name: sourceNamespace
+          - path: "[].port"
+            name: port
+          - path: "[].destinationSubnets"
+            widget: SimpleList
+            name: destinationSubnets
+            children:
+              - path: "[]"
+          - path: "[].sourceLabels"
+            widget: KeyValuePair
+            name: sourceLabels
+          - path: "[].gateways"
+            widget: SimpleList
+            name: gateways
+            children:
+              - path: "[]"
+      - path: "[].route"
+        widget: GenericList
+        name: routes
+        children:
+          - path: "[].destination"
+            widget: FormGroup
+            name: destination
+            children:
+              - path: host
+                name: host
+              - path: subset
+                name: subset
+              - path: port.number
+                name: port.number
+          - path: "[].weight"
+            name: weight
+  - path: spec.tcp
+    name: tcp
+    widget: GenericList
+    children:
+      - path: "[].match"
+        name: matches
+        children:
+          - path: "[].sourceNamespace"
+            name: sourceNamespace
+          - path: "[].port"
+            name: port
+          - path: "[].sniHosts"
+            widget: SimpleList
+            name: sniHosts
+            children:
+              - path: "[]"
+          - path: "[].destinationSubnets"
+            widget: SimpleList
+            name: destinationSubnets
+            children:
+              - path: "[]"
+          - path: "[].sourceLabels"
+            name: sourceLabels
+            widget: KeyValuePair
+          - path: "[].gateways"
+            widget: SimpleList
+            name: gateways
+            children:
+              - path: "[]"
+      - path: "[].route"
+        name: routes
+        children:
+          - path: "[].destination"
+            widget: FormGroup
+            name: destination
+            children:
+              - path: host
+                name: host
+              - path: subset
+                name: subset
+              - path: port.number
+                name: port.number
+          - path: "[].weight"
+            name: weight
+  - path: spec.http
+    simple: true
+    name: http
+    widget: GenericList
+    children:
+      - path: "[].match"
+        name: matches
+        widget: GenericList
+        children:
+          - path: "[].name"
+            name: t-name
+          - path: "[].uri"
+            name: uri
+            widget: KeyValuePair
+            keyEnum:
+              - prefix
+              - exact
+              - regex
+          - path: "[].scheme"
+            name: scheme
+            widget: KeyValuePair
+            keyEnum:
+              - prefix
+              - exact
+              - regex
+          - path: "[].method"
+            name: method
+            widget: KeyValuePair
+            keyEnum:
+              - prefix
+              - exact
+              - regex
+          - path: "[].authority"
+            name: authority
+            widget: KeyValuePair
+            keyEnum:
+              - prefix
+              - exact
+              - regex
+          - path: "[].headers"
+            name: headers
+            widget: KeyValuePair
+            value:
+              type: object
+              keyEnum:
+                - prefix
+                - exact
+                - regex
+          - path: "[].port"
+            name: port
+          - path: "[].sourceLabels"
+            name: sourceLabels
+            widget: KeyValuePair
+          - path: "[].gateways"
+            name: gateways
+            widget: SimpleList
+            children:
+              - path: "[]"
+          - path: "[].queryParams"
+            name: queryParams
+            widget: KeyValuePair
+            value:
+              type: object
+              keyEnum:
+                - prefix
+                - exact
+                - regex
+          - path: "[].ignoreUriCase"
+            name: ignoreUriCase
+          - path: "[].withoutHeaders"
+            name: withoutHeaders
+            widget: KeyValuePair
+            value:
+              type: object
+              keyEnum:
+                - prefix
+                - exact
+                - regex
+          - path: "[].sourceNamespace"
+            name: sourceNamespace
+          - path: "[].statPrefix"
+            name: statPrefix
+      - path: "[].route"
+        name: routes
+        children:
+          - path: "[].destination"
+            name: destination
+            widget: FormGroup
+            children:
+              - path: host
+                name: host
+              - path: subset
+                name: subset
+              - path: port.number
+                name: port.number
+          - path: "[].weight"
+            name: weight
+          - path: "[].headers"
+            name: headers
+            widget: FormGroup
+            children:
+              - path: response
+                name: response
+                widget: FormGroup
+                children:
+                  - path: set
+                    name: set
+                    widget: KeyValuePair
+                  - path: add
+                    name: add
+                    widget: KeyValuePair
+                  - path: remove
+                    name: remove
+                    widget: SimpleList
+                    children:
+                      - path: "[]"
+              - path: request
+                name: request
+                widget: FormGroup
+                children:
+                  - path: set
+                    name: set
+                    widget: KeyValuePair
+                  - path: add
+                    name: add
+                    widget: KeyValuePair
+                  - path: remove
+                    name: remove
+                    widget: SimpleList
+                    children:
+                      - path: "[]"
+      - path: "[].redirect"
+        name: redirect
+        widget: FormGroup
+        children:
+          - path: uri
+            name: uri
+          - path: authority
+            name: authority
+          - path: port
+            name: port
+          - path: derivePort
+            name: derivePort
+          - path: scheme
+            name: scheme
+          - path: redirectCode
+            name: redirectCode
+      - path: "[].directResponse"
+        name: directResponse
+        widget: FormGroup
+        children:
+          - path: status
+            name: status
+          - path: body
+            name: body
+            widget: FormGroup
+            children:
+              - path: string
+                name: string
+              - path: bytes
+                name: bytes
+      - path: "[].delegate"
+        name: delegate
+        widget: FormGroup
+        children:
+          - path: name
+            name: name
+          - path: namespace
+            name: namespace
+      - path: "[].rewrite"
+        name: rewrite
+        widget: FormGroup
+        children:
+          - path: uri
+            name: uri
+          - path: authority
+            name: authority
+      - path: "[].timeout"
+        name: timeout
+      - path: "[].retries"
+        name: retries
+        widget: FormGroup
+        children:
+          - path: attempts
+            name: attempts
+          - path: perTryTimeout
+            name: perTryTimeout
+          - path: retryOn
+            name: retryOn
+          - path: retryRemoteLocalities
+            name: retryRemoteLocalities
+      - path: "[].fault"
+        name: fault
+        widget: FormGroup
+        children:
+          - path: delay
+            name: delay
+            widget: FormGroup
+            children:
+              - path: fixedDelay
+                name: fixedDelay
+              - path: percentage.value
+                name: percentage.value
+              - path: percent
+                name: percent
+          - path: abort
+            name: abort
+            widget: FormGroup
+            children:
+              - path: httpStatus
+                name: httpStatus
+              - path: grpcStatus
+                name: grpcStatus
+              - path: percentage.value
+                name: percentage.value
+      - path: "[].mirror"
+        name: mirror
+        widget: FormGroup
+        children:
+          - path: host
+            name: host
+          - path: subset
+            name: subset
+          - path: port.number
+            name: port.number
+      - path: "[].mirrorPercentage.value"
+        name: mirrorPercentage
+      - path: "[].corsPolicy"
+        name: corsPolicy
+        widget: FormGroup
+        children:
+          - path: allowCredentials
+            name: allowCredentials
+            type: boolean
+          - path: allowMethods
+            name: allowMethods
+            widget: SimpleList
+            placeholder: allowMethods.placeholder
+            children:
+              - path: "[]"
+          - path: allowHeaders
+            name: allowHeaders
+            widget: SimpleList
+            children:
+              - path: "[]"
+          - path: exposeHeaders
+            name: exposeHeaders
+            widget: SimpleList
+            children:
+              - path: "[]"
+          - path: maxAge
+            name: maxAge
+            placeholder: maxAge.placeholder
+      - path: "[].headers"
+        name: headers
+        widget: FormGroup
+        children:
+          - path: response
+            name: response
+            widget: FormGroup
+            children:
+              - path: set
+                name: set
+                widget: KeyValuePair
+              - path: add
+                name: add
+                widget: KeyValuePair
+              - path: remove
+                name: remove
+                widget: SimpleList
+                children:
+                  - path: "[]"
+          - path: request
+            name: request
+            widget: FormGroup
+            children:
+              - path: set
+                name: set
+                widget: KeyValuePair
+              - path: add
+                name: add
+                widget: KeyValuePair
+              - path: remove
+                name: remove
+                widget: SimpleList
+                children:
+                  - path: "[]"
+  - path: spec.hosts
+    name: hosts
+    widget: SimpleList
+    children:
+      - path: "[]"
+  - path: spec.gateways
+    name: gateways
+    widget: SimpleList
+    children:
+      - path: "[]"
+  - path: spec.exportTo
+    name: exportTo
+    widget: SimpleList
+    children:
+      - path: "[]"
+general:
+  resource:
+    kind: VirtualService
+    group: networking.istio.io
+    version: v1beta1
+  urlPath: virtualservices
+  category: Istio
+  name: Virtual Services
+  scope: namespace
+  description: >-
+    {{[VirtualService](https://istio.io/latest/docs/reference/config/networking/virtual-service/)}}
+    describes a configuration that affects traffic routing. .
+list:
+  - name: hosts
+    source: spec.hosts
+    widget: JoinedArray
+  - name: gateways
+    source: spec.gateways
+    widget: JoinedArray
+translations:
+  en:
+    t-name: Name
+    gateways: Gateways
+    hosts: Hosts
+    exportTo: Export to
+    summary: Summary
+    http: HTTP
+    tls: TLS
+    tcp: TCP
+    mirror: Mirror
+    mirrorPercentage: Mirror Percentage
+    timeout: Timeout
+    matches: Matches
+    uri: URI
+    scheme: Scheme
+    method: Method
+    authority: Authority
+    headers: Headers
+    port: Port
+    sourceLabels: Source Labels
+    queryParams: Query Params
+    ignoreUriCase: Ignore URI Case
+    withoutHeaders: Without Headers
+    sourceNamespace: Source Namespace
+    statPrefix: Stat Prefix
+    routes: Routes
+    destination: Destination
+    host: Host
+    subset: Subset
+    port.number: Port Number
+    weight: Weight
+    request: Request
+    response: Response
+    set: Set
+    add: Add
+    remove: Remove
+    redirect: Redirect
+    derivePort: Derive Port
+    redirectCode: Redirect Code
+    directResponse: Direct Response
+    status: Status
+    body: Body
+    string: String
+    bytes: Bytes
+    delegate: Delegate
+    namespace: Namespace
+    rewrite: Rewrite
+    retries: Retries
+    attempts: Attempts
+    perTryTimeout: Per Try Timeout
+    retryOn: Retry On
+    retryRemoteLocalities: Retry Remote Localities
+    fault: Fault
+    delay: Delay
+    fixedDelay: Fixed Delay
+    abort: Abort
+    percentage.value: Percentage Value
+    percent: Percent
+    httpStatus: HTTP Status
+    grpcStatus: GRPC Status
+    corsPolicy: CORS Policy
+    allowOrigins: Allow Origins
+    allowMethods: Allow Methods
+    allowMethods.placeholder: For example, GET
+    allowHeaders: Allow Headers
+    exposeHeaders: Expose Headers
+    maxAge: Max Age
+    maxAge.placeholder: For example, 24h
+    allowCredentials: Allow Credentials
+    destinationSubnets: Destination Subnets
+    sniHosts: SNI Hosts
+---
+general:
+  resource:
+    kind: Subscription
+    group: eventing.kyma-project.io
+    version: v1alpha1
+  name: Subscriptions
+  category: Configuration
+  scope: namespace
+  description: >-
+    {{[Subscription](https://kyma-project.io/docs/kyma/latest/05-technical-reference/00-custom-resources/evnt-01-subscription#documentation-content)}}
+    is used to subscribe to events.
+  urlPath: subscriptions
+details:
+  header:
+    - name: status.conditions.status
+      source: 'status.ready = false ? "error" : "ready"'
+      widget: Badge
+      description: status.conditions.message
+    - name: spec.sink
+      source: spec.sink
+    - source: spec.sink
+      widget: ResourceLink
+      name: spec.sink.controlledBy
+      resource:
+        name: $substringBefore($substringAfter(spec.sink, "http://"), ".")
+        namespace: $root.metadata.namespace
+        kind: "'Service'"
+  body:
+    - source: status.conditions
+      widget: Table
+      name: status.conditions
+      children:
+        - source: 'status.ready = false ? "error" : "ready"'
+          name: status.type
+          widget: Badge
+          description: status.conditions.message
+        - source: $item.status
+          name: status.conditions.status
+        - source: $item.reason
+          name: status.conditions.reason
+        - source: $readableTimestamp($item.lastTransitionTime)
+          name: status.conditions.lastTransitionTime
+    - source: spec.filter.filters
+      widget: Table
+      name: spec.filters
+      disablePadding: true
+      showHeader: false
+      collapsibleTitle: '"Filter #" & $string($index + 1) & " " & ($item.eventType.value)'
+      collapsible:
+        - widget: Columns
+          children:
+            - source: $item.eventType
+              widget: Panel
+              name: spec.filter.eventType
+              children:
+                - source: $parent.property
+                  name: spec.filter.event.property
+                - source: $parent.type
+                  name: spec.filter.event.type
+                - source: $parent.value
+                  name: spec.filter.event.value
+            - source: $item.eventSource
+              widget: Panel
+              name: spec.filter.eventSource
+              children:
+                - source: $parent.property
+                  name: spec.filter.event.property
+                - source: $parent.type
+                  name: spec.filter.event.type
+                - source: >-
+                    $parent.value = "" ? "Handled by the NATS backend" :
+                    $parent.value
+                  name: spec.filter.event.value
+    - widget: EventList
+      filter: $matchEvents($$, $root.kind, $root.metadata.name)
+      name: events
+      defaultType: NORMAL
+      hideInvolvedObjects: true
+form:
+  - path: spec.sink
+    name: spec.sink
+    simple: true
+    inputInfo: inputInfo.sink
+    placeholder: placeholder.sink
+  - widget: GenericList
+    path: spec.filter.filters
+    simple: true
+    children:
+      - path: "[].eventType.value"
+        name: spec.filter.eventType
+        placeholder: placeholder.eventType
+        inputInfo: inputInfo.eventType
+      - path: "[].eventSource.value"
+        name: spec.filter.eventSource
+        required: false
+    template:
+      eventSource:
+        property: source
+        type: exact
+        value: ""
+      eventType:
+        property: type
+        type: exact
+        value: ""
+list:
+  - name: status.conditions.status
+    source: 'status.ready = false ? "error" : "ready"'
+    widget: Badge
+    description: status.conditions.message
+  - name: status.cleanEventTypes
+    source: status.cleanEventTypes
+    widget: Labels
+translations:
+  en:
+    inputInfo.sink: Sink structure, 'http://{SERVICE}.{NAMESPACE}.svc.cluster.local'
+    inputInfo.eventType: Event Type structure, 'sap.kyma.custom.{APP}.{EVENT.NAME}.{VERSION}'
+    events: Events
+    placeholder.eventType: >-
+      Enter the event type, for example,
+      sap.kyma.custom.test-app.order.cancelled.v1
+    placeholder.sink: Enter the sink, for example, http://service.default.svc.cluster.local
+    spec.filters: Filters
+    spec.filter.eventType: Event Type
+    spec.filter.eventSource: Event Source
+    spec.filter.event.property: Property
+    spec.filter.event.type: Type
+    spec.filter.event.value: Value
+    spec.sink: Sink
+    spec.sink.controlledBy: Controlled By
+    status.cleanEventTypes: Event Types
+    status.conditions: Condidtions
+    status.conditions.lastTransitionTime: Last Transition
+    status.conditions.reason: Reason
+    status.conditions.status: Status
+    status.type: Type
+---
+general:
+  resource:
+    kind: Application
+    group: applicationconnector.kyma-project.io
+    version: v1alpha1
+  name: Applications
+  category: Integration
+  urlPath: applications
+  scope: cluster
+  description: >-
+    {{[Application](https://kyma-project.io/docs/kyma/latest/05-technical-reference/00-custom-resources/ac-01-application)}}
+    represents an external solution connected to Kyma.
+details:
+  header:
+    - name: Description
+      source: spec.description
+    - name: Access Label
+      source: spec.accessLabel
+  body:
+    - widget: Table
+      source: spec.services
+      name: Provided Services and Events
+      children:
+        - source: $count($item.entries[type='API'])
+          name: APIs
+        - source: $count($item.entries[type='Events'])
+          name: Events
+        - source: $item.providerDisplayName
+          name: Provider
+      collapsibleTitle: $item.displayName
+      collapsible:
+        - widget: Plain
+          children:
+            - source: $item.longDescription
+        - widget: Table
+          name: APIs
+          source: $item.entries[type = 'API']
+          children:
+            - source: $item.name
+              name: Name
+            - source: $item.accessLabel
+              name: Access Label
+            - widget: ExternalLink
+              source: $item.centralGatewayUrl
+              name: Central Gateway URL
+              copyable: true
+        - widget: Table
+          name: Events
+          source: $item.entries[type = 'Events']
+          children:
+            - source: $item.name
+              name: Name
+            - source: $item.accessLabel
+              name: Access Label
+            - widget: ExternalLink
+              source: $item.centralGatewayUrl
+              name: Central Gateway URL
+              copyable: true
+form:
+  - path: metadata.name
+    extraPaths:
+      - spec.accessLabel
+      - metadata.labels['app.kubernetes.io/name']
+  - path: spec.description
+  - path: spec.accessLabel
+---
+details:
+  header:
+    - name: header.status
+      widget: Badge
+      highlights:
+        positive:
+          - RUNNING
+        negative:
+          - FAILED
+          - ERROR
+        informative:
+          - INITIALIZING
+        critical:
+          - DEPLOYING
+          - BUILDING
+          - PENDING
+      source: >-
+        ($.status = undefined or $.status.conditions = undefined or
+        $count($.status.conditions) = 0) ? 'INITIALIZING' :
+        $count($filter($.status.conditions, function($v) { $v.status = 'False'
+        })) != 0 ? $count($filter($.status.conditions, function($v) { $v.type =
+        'Running' and $v.status = 'True' })) != 0 ? 'ERROR' : 'FAILED' :
+        $count($filter($.status.conditions, function($v) { $v.type =
+        'ConfigurationReady' and $v.status = 'True' })) != 0 ?
+        $count($filter($.status.conditions, function($v) { $v.type =
+        'BuildReady' and $v.status = 'True' })) != 0 ?
+        $count($filter($.status.conditions, function($v) { $v.type = 'Running'
+        and $v.status = 'True' })) != 0 ? 'RUNNING' :
+        $count($filter($.status.conditions, function($v) { $v.type = 'Running'
+        and $v.status = 'Unknown' and $v.reason = 'MinReplicasNotAvailable' }))
+        != 0 ? 'PENDING' : 'DEPLOYING' : 'BUILDING' : 'INITIALIZING'
+      description: >-
+        ($.status = undefined or $.status.conditions = undefined or
+        $count($.status.conditions) = 0) ? null :
+        $count($filter($.status.conditions, function($v) { $v.status = 'False'
+        })) != 0 ? $count($filter($.status.conditions, function($v) { $v.type =
+        'Running' and $v.status = 'True' })) != 0 ? 'New revision error: ' &
+        $filter($.status.conditions, function($v) { $v.status = 'False'
+        })[0].message : 'Error: ' & $filter($.status.conditions, function($v) {
+        $v.status = 'False' })[0].message : null
+    - name: header.sourceType
+      source: 'spec.source.gitRepository ? "Git Repository" : "Inline Editor"'
+    - name: header.runtime
+      source: >-
+        spec.runtime = 'nodejs16' ? 'Node.js 16' : (spec.runtime = 'nodejs14' ?
+        'Node.js 14' : (spec.runtime = 'python39' ? 'Python 3.9' :
+        spec.runtime))
+  body:
+    - widget: Tabs
+      children:
+        - name: tabs.code
+          children:
+            - source: spec.source.inline.source
+              widget: CodeViewer
+              name: code.source
+              language: '$contains($root.spec.runtime, "python") ? "python": "javascript"'
+              visibility: $exists($.data)
+            - source: spec.source.inline.dependencies
+              widget: CodeViewer
+              name: code.dependencies
+              language: '"json"'
+              visibility: $exists($.data)
+            - source: spec.source.gitRepository
+              widget: Panel
+              name: code.gitRepositoryConfig
+              visibility: $exists($.data)
+              children:
+                - name: code.gitRepository.url
+                  source: spec.source.gitRepository.url
+                - name: code.gitRepository.reference
+                  source: spec.source.gitRepository.reference
+                - name: code.gitRepository.baseDir
+                  source: spec.source.gitRepository.baseDir
+            - source: spec.env
+              widget: Table
+              name: code.env
+              children:
+                - source: $item.name
+                  name: code.env.name
+                - source: $item.value
+                  name: code.env.value
+                - name: code.env.valueFrom
+                  widget: ResourceLink
+                  source: >-
+                    $exists($item.valueFrom.configMapKeyRef)?
+                    $item.valueFrom.configMapKeyRef.name :
+                    $item.valueFrom.secretKeyRef.name
+                  resource:
+                    name: >-
+                      $exists($item.valueFrom.configMapKeyRef) ?
+                      $item.valueFrom.configMapKeyRef.name :
+                      $item.valueFrom.secretKeyRef.name
+                    namespace: $root.metadata.namespace
+                    kind: >-
+                      $exists($item.valueFrom.configMapKeyRef) ? 'ConfigMap' :
+                      'Secret'
+                - name: code.env.source
+                  widget: Badge
+                  source: >-
+                    $exists($item.valueFrom.configMapKeyRef) ? 'CONFIG MAP' :
+                    $exists($item.valueFrom.secretKeyRef) ? 'SECRET' : 'CUSTOM'
+                - name: code.env.key
+                  source: >-
+                    $exists($item.valueFrom.configMapKeyRef) ?
+                    $item.valueFrom.configMapKeyRef.key :
+                    $exists($item.valueFrom.secretKeyRef) ?
+                    $item.valueFrom.secretKeyRef.key : 'N/A'
+            - widget: ResourceList
+              source: $replicas()
+              name: code.replicas
+              disableCreate: true
+            - widget: EventList
+              filter: $matchEvents($item, $root.kind, $root.metadata.name)
+              name: events
+              defaultType: information
+              hideInvolvedObjects: true
+        - name: tabs.configuration
+          children:
+            - widget: ResourceList
+              source: $apiRules()
+              name: configuration.apiRules
+            - widget: ResourceList
+              source: $subscriptions()
+              name: configuration.subscriptions
+        - name: tabs.resources
+          children:
+            - widget: Panel
+              description: resources.description
+              name: resources.scalingOptions
+              children:
+                - name: resources.minReplicas
+                  source: spec.scaleConfig.minReplicas
+                - name: resources.maxReplicas
+                  source: spec.scaleConfig.maxReplicas
+            - widget: Columns
+              inline: false
+              children:
+                - name: resources.runtimeProfile
+                  widget: Panel
+                  children:
+                    - name: resources.requests.memory
+                      source: >-
+                        spec.resourceConfiguration.function.resources.requests.memory
+                    - name: resources.requests.cpu
+                      source: >-
+                        spec.resourceConfiguration.function.resources.requests.cpu
+                    - name: resources.limits.memory
+                      source: >-
+                        spec.resourceConfiguration.function.resources.limits.memory
+                    - name: resources.limits.cpu
+                      source: spec.resourceConfiguration.function.resources.limits.cpu
+                - name: resources.buildProfile
+                  widget: Panel
+                  children:
+                    - name: resources.requests.memory
+                      source: >-
+                        spec.resourceConfiguration.build.resources.requests.memory
+                    - name: resources.requests.cpu
+                      source: spec.resourceConfiguration.build.resources.requests.cpu
+                    - name: resources.limits.memory
+                      source: spec.resourceConfiguration.build.resources.limits.memory
+                    - name: resources.limits.cpu
+                      source: spec.resourceConfiguration.build.resources.limits.cpu
+form:
+  - var: sourceType
+    widget: Text
+    enum:
+      - Inline
+      - Git Repository
+    dynamicValue: '$exists(spec.source.gitRepository) ? "Git Repository" : "Inline"'
+  - simple: true
+    path: spec.runtime
+    placeholder: placeholders.spec.runtime
+    enum:
+      - nodejs14
+      - nodejs16
+      - python39
+  - path: spec.runtimeImageOverride
+  - path: spec.source.gitRepository
+    widget: FormGroup
+    visibility: $sourceType = 'Git Repository'
+    children:
+      - path: url
+      - path: baseDir
+        required: true
+      - path: reference
+        required: true
+      - var: useAuthorization
+        type: boolean
+        dynamicValue: $exists($.spec.source.gitRepository.auth)
+      - widget: FormGroup
+        path: auth
+        visibility: $useAuthorization
+        children:
+          - path: secretName
+            widget: Resource
+            resource:
+              kind: Secret
+              version: v1
+              scope: namespace
+          - path: type
+  - path: spec.scaleConfig
+    widget: FormGroup
+    columns: "2"
+    children:
+      - advanced: true
+        path: minReplicas
+        required: false
+        min: "1"
+      - advanced: true
+        path: maxReplicas
+        required: false
+        min: "1"
+  - path: spec.resourceConfiguration.function
+    widget: FormGroup
+    children:
+      - path: resources.limits
+        widget: KeyValuePair
+      - path: resources.requests
+        widget: KeyValuePair
+  - path: spec.resourceConfiguration.build
+    widget: FormGroup
+    children:
+      - path: resources.limits
+        widget: KeyValuePair
+      - path: resources.requests
+        widget: KeyValuePair
+  - path: spec.env
+    widget: GenericList
+    children:
+      - path: "[]"
+        children:
+          - var: envType
+            widget: Text
+            enum:
+              - Custom
+              - From Config Map
+              - From Secret
+            dynamicValue: >-
+              $exists($item.valueFrom.secretKeyRef) ? 'From Secret' :
+              ($exists($item.valueFrom.configMapKeyRef) ? 'From Config Map' :
+              'Custom')
+          - path: name
+          - path: value
+            visibility: $envType = 'Custom'
+          - path: valueFrom.secretKeyRef.name
+            widget: Resource
+            resource:
+              kind: Secret
+              version: v1
+              scope: namespace
+            provideVar: secret
+            visibility: $envType = 'From Secret'
+          - path: valueFrom.secretKeyRef.key
+            widget: Text
+            enum: $keys($secret.data)
+            visibility: $envType = 'From Secret'
+          - path: valueFrom.configMapKeyRef.name
+            widget: Resource
+            resource:
+              kind: ConfigMap
+              version: v1
+              scope: namespace
+            provideVar: configMap
+            visibility: $envType = 'From Config Map'
+          - path: valueFrom.configMapKeyRef.key
+            widget: Text
+            enum: $keys($configMap.data)
+            visibility: $envType = 'From Config Map'
+  - path: spec.source.inline
+    visibility: $sourceType = 'Inline'
+    children:
+      - path: source
+        widget: CodeEditor
+        language: '$contains($root.spec.runtime, "node") ? "javascript" : "python"'
+      - path: dependencies
+        widget: CodeEditor
+        language: '$contains($root.spec.runtime, "node") ? "javascript" : "plaintext"'
+general:
+  resource:
+    kind: Function
+    group: serverless.kyma-project.io
+    version: v1alpha2
+  name: Ext Functions
+  category: Workloads
+  urlPath: ext-functions
+  scope: namespace
+  description: >-
+    {{[Function](https://kyma-project.io/docs/kyma/latest/05-technical-reference/00-custom-resources/svls-01-function/#documentation-content/)}}
+    is a simple code snippet that you can run without provisioning or managing
+    servers.
+list:
+  - name: header.runtime
+    source: >-
+      spec.runtime = 'nodejs16' ? 'Node.js 16' : (spec.runtime = 'nodejs14' ?
+      'Node.js 14' : (spec.runtime = 'python39' ? 'Python 3.9' : spec.runtime))
+  - name: header.sourceType
+    source: 'spec.source.gitRepository ? "Git Repository" : "Inline Editor"'
+  - name: header.status
+    widget: Badge
+    highlights:
+      positive:
+        - RUNNING
+      negative:
+        - FAILED
+        - ERROR
+      informative:
+        - INITIALIZING
+      critical:
+        - DEPLOYING
+        - BUILDING
+        - PENDING
+    source: >-
+      ($.status = undefined or $.status.conditions = undefined or
+      $count($.status.conditions) = 0) ? 'INITIALIZING' :
+      $count($filter($.status.conditions, function($v) { $v.status = 'False' }))
+      != 0 ? $count($filter($.status.conditions, function($v) { $v.type =
+      'Running' and $v.status = 'True' })) != 0 ? 'ERROR' : 'FAILED' :
+      $count($filter($.status.conditions, function($v) { $v.type =
+      'ConfigurationReady' and $v.status = 'True' })) != 0 ?
+      $count($filter($.status.conditions, function($v) { $v.type = 'BuildReady'
+      and $v.status = 'True' })) != 0 ? $count($filter($.status.conditions,
+      function($v) { $v.type = 'Running' and $v.status = 'True' })) != 0 ?
+      'RUNNING' : $count($filter($.status.conditions, function($v) { $v.type =
+      'Running' and $v.status = 'Unknown' and $v.reason =
+      'MinReplicasNotAvailable' })) != 0 ? 'PENDING' : 'DEPLOYING' : 'BUILDING'
+      : 'INITIALIZING'
+    description: >-
+      ($.status = undefined or $.status.conditions = undefined or
+      $count($.status.conditions) = 0) ? null :
+      $count($filter($.status.conditions, function($v) { $v.status = 'False' }))
+      != 0 ? $count($filter($.status.conditions, function($v) { $v.type =
+      'Running' and $v.status = 'True' })) != 0 ? 'New revision error: ' &
+      $filter($.status.conditions, function($v) { $v.status = 'False'
+      })[0].message : 'Error: ' & $filter($.status.conditions, function($v) {
+      $v.status = 'False' })[0].message : null
+dataSources:
+  replicas:
+    resource:
+      kind: Pod
+      version: v1
+    filter: >-
+      ($item.metadata.labels.'serverless.kyma-project.io/function-name' =
+      $root.metadata.name) and
+      ($item.metadata.labels.'serverless.kyma-project.io/resource' =
+      'deployment')
+  apiRules:
+    resource:
+      kind: APIRule
+      version: v1alpha1
+      group: gateway.kyma-project.io
+    filter: $contains($item.spec.service.name, $root.metadata.name)
+  subscriptions:
+    resource:
+      kind: Subscription
+      version: v1alpha1
+      group: eventing.kyma-project.io
+    filter: $contains($item.spec.sink, $root.metadata.name)
+translations:
+  en:
+    tabs.code: Code
+    tabs.configuration: Configuration
+    tabs.resources: Resources
+    code.gitRepositoryConfig: Repository Configuration
+    code.replicas: Replicas of the Function
+    code.source: Source
+    code.dependencies: Dependencies
+    code.gitRepository.url: Url
+    code.gitRepository.reference: Reference
+    code.gitRepository.baseDir: Base Directory
+    code.env: Environment Variables
+    code.env.name: Name
+    code.env.value: Value
+    code.env.valueFrom: Value From
+    code.env.source: Source
+    code.env.key: Key
+    events: Events
+    configuration.apiRules: API Rules
+    configuration.subscriptions: Subscriptions
+    header.runtime: Runtime
+    header.status: Status
+    header.sourceType: Source Type
+    resources.scalingOptions: Scaling Options
+    resources.minReplicas: Minimum Replicas
+    resources.maxReplicas: Maximum Replicas
+    resources.description: Minimum and maximum number of running Replicas.
+    resources.runtimeProfile: Runtime Profile
+    resources.buildProfile: Build Job Profile
+    resources.requests.memory: Memory Requests
+    resources.requests.cpu: CPU Requests
+    resources.limits.memory: Memory Limits
+    resources.limits.cpu: CPU Limits
+    spec.scaleConfig: Scale Config
+    spec.scaleConfig.maxReplicas: Max Replicas
+    spec.scaleConfig.minReplicas: Min Replicas
+    spec.source.inline.dependencies: Dependencies
+    spec.source.inline.source: Source
+    spec.env: Environment Variables
+    Requests: Requests
+    Limits: Limits
+    spec.runtime: Runtime
+    spec.runtimeImageOverride: Runtime Image Override
+    Status: Status
+    Runtime: Runtime
+    Source Type: Source Type
+    spec.runtime.nodejs14: Node.js 14
+    spec.runtime.nodejs16: Node.js 16
+    spec.runtime.python39: Python 3.9
+    spec.resourceConfiguration.build: Build
+    spec.resourceConfiguration.function: Function
+    placeholders.spec.runtime: Choose Function runtime
+    spec.env.name: Variable Name
+    envType: Variable Type
+    Node.js Function: Node.js Function
+    Python Function: Python Function
+presets:
+  - name: Node.js Function
+    default: true
+    value:
+      spec:
+        runtime: nodejs14
+        source:
+          inline:
+            source: |-
+              module.exports = {
+                main: async function (event, context) {
+                  const message = `Hello World`
+                    + ` from the Kyma Function ${context["function-name"]}`
+                    + ` running on ${context.runtime}!`;
+                  console.log(message);
+                  return message;
+                }
+              }
+  - name: Python Function
+    value:
+      spec:
+        runtime: python39
+        source:
+          inline:
+            source: |-
+              def main(event, context):
+                  message = "Hello World from the Kyma Function "+context['function-name']+" running on "+context['runtime']+ "!";
+                  print(message)
+                  return message
